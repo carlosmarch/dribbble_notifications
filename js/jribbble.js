@@ -1,30 +1,130 @@
 /**
- * jQuery Plugin - Jribbble v1.0.0
- * A jQuery plugin to fetch shot and player data from the Dribbble API, 
- * http://dribbble.com/api
- * 
- * Copyright (c) 2011 Tyler Gaw
- *
- * Permission is hereby granted, free of charge, to any person obtaining
- * a copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to
- * the following conditions:
- *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
- * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
- * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- * 
- *
- * Date: Sun Jan 8 20:45:02 2012 -0500
- *
- */(function(a){"use strict",a.fn.jribbble=function(){return this.makeRequest=function(b,c,d){var e=function(b){a.isFunction(c)&&c(b)},f=b.replace("//","/");a.ajax({data:d,dataType:"json",success:e,type:"GET",url:a.jribbble.baseUrl+f})},this},a.jribbble={},a.jribbble.baseUrl="http://api.dribbble.com",a.jribbble.paths={shots:"/shots/",rebounds:"/rebounds/",following:"/following/",players:"/players/",followers:"/followers/",draftees:"/draftees/",comments:"/comments/",likes:"/likes/"},a.jribbble.getShotById=function(b,c){var d=a.jribbble.paths.shots+b;a.fn.jribbble().makeRequest(d,c)},a.jribbble.getReboundsOfShot=function(b,c,d){var e=a.jribbble.paths.shots+b+a.jribbble.paths.rebounds;a.fn.jribbble().makeRequest(e,c,d)},a.jribbble.getShotsByList=function(b,c,d){var e=a.jribbble.paths.shots+b;a.fn.jribbble().makeRequest(e,c,d)},a.jribbble.getShotsByPlayerId=function(b,c,d){var e=a.jribbble.paths.players+b+a.jribbble.paths.shots;a.fn.jribbble().makeRequest(e,c,d)},a.jribbble.getShotsThatPlayerFollows=function(b,c,d){var e=a.jribbble.paths.players+b+a.jribbble.paths.shots+a.jribbble.paths.following;a.fn.jribbble().makeRequest(e,c,d)},a.jribbble.getPlayerById=function(b,c){var d=a.jribbble.paths.players+b;a.fn.jribbble().makeRequest(d,c)},a.jribbble.getPlayerFollowers=function(b,c,d){var e=a.jribbble.paths.players+b+a.jribbble.paths.followers;a.fn.jribbble().makeRequest(e,c,d)},a.jribbble.getPlayerFollowing=function(b,c,d){var e=a.jribbble.paths.players+b+a.jribbble.paths.following;a.fn.jribbble().makeRequest(e,c,d)},a.jribbble.getPlayerDraftees=function(b,c,d){var e=a.jribbble.paths.players+b+a.jribbble.paths.draftees;a.fn.jribbble().makeRequest(e,c,d)},a.jribbble.getCommentsOfShot=function(b,c,d){var e=a.jribbble.paths.shots+b+a.jribbble.paths.comments;a.fn.jribbble().makeRequest(e,c,d)},a.jribbble.getShotsThatPlayerLikes=function(b,c,d){var e=a.jribbble.paths.players+b+a.jribbble.paths.shots+a.jribbble.paths.likes;a.fn.jribbble().makeRequest(e,c,d)}})(jQuery);
+ * @preserve
+ * Jribbble v2.0.4 | Thu Jun 4 01:49:29 2015 -0400
+ * Copyright (c) 2015, Tyler Gaw me@tylergaw.com
+ * Released under the ISC-LICENSE
+ */
+!function (e, t, r, s) {
+    "use strict";
+    e.jribbble = {};
+    var n = null, o = "https://api.dribbble.com/v1", i = ["animated", "attachments", "debuts", "playoffs", "rebounds", "teams"], u = {
+        token: "Jribbble: Missing Dribbble access token. Set one with $.jribbble.accessToken = YOUR_ACCESS_TOKEN. If you do not have an access token, you must register a new application at https://dribbble.com/account/applications/new",
+        singular: function (e) {
+            return e.substr(0, e.length - 1)
+        },
+        idRequired: function (e) {
+            return "Jribbble: You have to provide a " + this.singular(e) + ' ID. ex: $.jribbble.%@("1234").'.replace(/%@/g, e)
+        },
+        subResource: function (e) {
+            return "Jribbble: You have to provide a " + this.singular(e) + ' ID to get %@. ex: $.jribbble.%@("1234").%@()'.replace(/%@/g, e)
+        },
+        shotId: function (e) {
+            return "Jribbble: You have to provide a shot ID to get %@. ex: " + ' $.jribbble.shots("1234").%@()'.replace(/%@/g, e)
+        },
+        commentLikes: 'Jribbble: You have to provide a comment ID to get likes. ex:  $.jribbble.shots("1234").comments("456").likes()'
+    }, c = function (e, t) {
+        if (e && "object" != typeof e)return e;
+        throw new Error(u.idRequired(t))
+    }, l = function (e) {
+        var t = {};
+        return e.forEach(function (e) {
+            t[e] = d.call(this, e)
+        }.bind(this)), t
+    }, h = function (t) {
+        var r = e.param(t);
+        return r ? "?" + r : ""
+    }, a = function (e) {
+        if (0 !== e.length) {
+            var t = e[0], r = typeof t, s = {};
+            if ("number" === r || "string" === r) {
+                var n = i.indexOf(t);
+                n > -1 ? s.list = t : s.resource = t
+            } else"object" === r && (s = t);
+            return s
+        }
+    }, b = function () {
+        var t = e.extend({}, e.Deferred()), r = function () {
+            return this.methods = [], this.response = null, this.flushed = !1, this.add = function (e) {
+                this.flushed ? e(this.scope) : this.methods.push(e)
+            }, this.flush = function (e) {
+                if (!this.flushed) {
+                    for (this.scope = e, this.flushed = !0; this.methods[0];)this.methods.shift()(e);
+                    return e
+                }
+            }, this
+        };
+        return t.queue = new r, t.url = o, t.get = function () {
+            return n ? (e.ajax({
+                type: "GET", url: this.url, beforeSend: function (e) {
+                    e.setRequestHeader("Authorization", "Bearer " + n)
+                }, success: function (e) {
+                    this.resolve(e)
+                }.bind(this), error: function (e) {
+                    this.reject(e)
+                }.bind(this)
+            }), this) : (console.error(u.token), !1)
+        }, t
+    }, f = function (t) {
+        return function (r) {
+            return e.extend(this, b()), this.queue.add(function (e) {
+                e.url += "/" + t + "/" + r
+            }), setTimeout(function () {
+                this.queue.flush(this).get()
+            }.bind(this)), this
+        }
+    }, d = function (e) {
+        return function (t) {
+            return this.queue.add(function (r) {
+                r.url += "/" + e + "/" + h(t || {})
+            }), this
+        }
+    };
+    e.jribbble.shots = function (t, r) {
+        var s = a([].slice.call(arguments)) || {}, n = r || {}, o = function (t) {
+            return function (r, s) {
+                var n = a([].slice.call(arguments)) || {}, o = s || {};
+                return this.queue.add(function (r) {
+                    if (!r.shotId)throw new Error(u.shotId(t));
+                    r.url += "/" + t + "/", n.resource && (r.url += n.resource, delete n.resource), r.url += h(e.extend(n, o))
+                }), this
+            }
+        }, i = function () {
+            return e.extend(this, b()), this.url += "/shots/", this.queue.add(function (t) {
+                s.resource && (t.shotId = s.resource, t.url += s.resource, delete s.resource), t.url += h(e.extend(s, n))
+            }), setTimeout(function () {
+                this.queue.flush(this).get()
+            }.bind(this)), this
+        };
+        return i.prototype.attachments = o("attachments"), i.prototype.buckets = o("buckets"), i.prototype.likes = o("likes"), i.prototype.projects = o("projects"), i.prototype.rebounds = o("rebounds"), i.prototype.comments = function (t, r) {
+            var s = a([].slice.call(arguments)) || {}, n = r || {};
+            return this.queue.add(function (t) {
+                if (!t.shotId)throw new Error(u.shotId("comments"));
+                t.url += "/comments/", s.resource && (t.commentId = s.resource, t.url += s.resource + "/", delete s.resource), t.url += h(e.extend(s, n))
+            }), this.likes = function (e) {
+                var t = e || {};
+                return this.queue.add(function (e) {
+                    if (!e.commentId)throw new Error(u.commentLikes);
+                    e.url += "likes/" + h(t)
+                }), this
+            }, this
+        }, new i
+    }, e.jribbble.teams = function (e) {
+        var t = "teams", r = c(e, t), s = f.call(this, t);
+        return s.prototype = l.call(this, ["members", "shots"]), new s(r)
+    }, e.jribbble.users = function (e) {
+        var t = "users", r = c(e, t), s = f.call(this, t);
+        return s.prototype = l.call(this, ["buckets", "followers", "following", "likes", "projects", "shots", "teams"]), s.prototype.isFollowing = function (e) {
+            return this.queue.add(function (t) {
+                t.url += "/following/" + e
+            }), this
+        }, new s(r)
+    }, e.jribbble.buckets = function (e) {
+        var t = "buckets", r = c(e, t), s = f.call(this, t);
+        return s.prototype = l.call(this, ["shots"]), new s(r)
+    }, e.jribbble.projects = function (e) {
+        var t = "projects", r = c(e, t), s = f.call(this, t);
+        return s.prototype = l.call(this, ["shots"]), new s(r)
+    }, e.jribbble.setToken = function (e) {
+        return n = e, this
+    }
+}(jQuery, window, document);

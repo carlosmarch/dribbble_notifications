@@ -77,13 +77,17 @@
     *
     */
 
+    $.jribbble.setToken('a856179b187e185d438d1fd24d3d5408b57e52bb3d8607b8fdeeda9239c14278');
+
+
     function getPlayerBio(playerId, callback){
-        $.jribbble.getPlayerById(playerId, callback );
-    };
+        $.jribbble.users(playerId).then(callback);
+    }
 
     function getPlayerShots(playerId){
-        $.jribbble.getShotsByPlayerId( playerId, function (playerShots) {
-              var userHasShots = playerShots.shots.length > 0;         
+        $.jribbble.users(playerId).shots().then(function (playerShots) {
+            console.log('getPlayerShots', playerShots)
+            var userHasShots = playerShots.length > 0;
               if( userHasShots ){
                   //User is playing
                   printPlayerShotTPL( playerShots );
@@ -92,11 +96,10 @@
                   printUserNotPlayingTPL( playerId );
               }
         });
-    };
+    }
 
     function getPlayerBioExtraInfo(playerId, extraData){
-        $.jribbble.getPlayerById(playerId, function (player) {
-            //console.log(player.message)
+        $.jribbble.users(playerId).then(function (player) {
             var notiText  =  extraData;
             showPlayerNotification(player,notiText)
         });
@@ -104,8 +107,9 @@
 
 
     function isPlayer(playerId){
-        $.jribbble.getShotsByPlayerId( playerId, function (playerShots) {
-              var userHasShots = playerShots.shots.length > 0;       
+        $.jribbble.users(playerId).shots().then(function (playerShots) {
+            console.log('isPlayer', playerShots)
+            var userHasShots = playerShots.length > 0;
               if( userHasShots ){
                   return true;
               }else{
@@ -256,11 +260,12 @@
     */
 
     var printPlayerBioTPL = function (player){
+        //DETAIL PROFILE INFO
           var html = [];
           html.push('<div id="top"><div id="return"><span class="close">X</span></div><a class="profile_image" href="' + player.url + '" target="_blank"><img src="' + player.avatar_url + '" alt=""></a>');
           html.push('<h3 id="name">' + player.name + ' / ' + player.location + '</h3></div>');       
           html.push('<ul id="profile_data"><li id="n_shots"><span class="number"><a href="' + player.url + '" target="_blank">' + player.shots_count + '</a></span><b class="text">Shots</b></li>');
-          html.push('<li id="n_following"><span class="number"><a href="http://dribbble.com/' + player.username + '/following" target="_blank">' + player.following_count + '</a></span><b class="text">Following</b></li>');
+        html.push('<li id="n_following"><span class="number"><a href="http://dribbble.com/' + player.username + '/following" target="_blank">' + player.followings_count + '</a></span><b class="text">Following</b></li>');
           html.push('<li id="n_followers"><span class="number"><a href="http://dribbble.com/' + player.username + '/followers" target="_blank">' + player.followers_count + '</a></span><b class="text">Followers</b></li>');
           //html.push('<li id="n_draftees"><span class="number">' + player.rebounds_count + '</span><b class="text">Rebounds</b></li>');
           html.push('</ul><div id="profile_pixels"><span class="number_pixels">' + player.shots_count*120000 + '</span><b class="text_pixels">Pixels Dribbbled</b></div>');
@@ -270,10 +275,10 @@
 
 
     function printPlayerShotTPL(playerShots){
-        //DETAIL PROFILE INFO - SHOT INFO IN BOTTOM
-        var html = [];      
-        html.push('<div id="latest_shot"><a href="' + playerShots.shots[0].url + '" target="_blank"><img class="shot-image" src="' + playerShots.shots[0].image_teaser_url + '" ');
-        html.push('alt="' + playerShots.shots[0].title + '"></a><h3>' + playerShots.shots[0].title + '</h3></div>');
+        //SHOT INFO IN BOTTOM
+        var html = [];
+        html.push('<div id="latest_shot"><a href="' + playerShots[0].html_url + '" target="_blank"><img class="shot-image" src="' + playerShots[0].images.normal + '" ');
+        html.push('alt="' + playerShots[0].title + '"></a><h3>' + playerShots[0].title + '</h3></div>');
         
         $('#detail').append( html.join('') );
     }
