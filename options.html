@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Options</title>
+	<style>
+
+		html, body{
+			margin:0;
+			padding: 0;
+			background: rgb(244, 244, 244);
+			font-family: Helvetica, Arial, sans-serif;
+		}
+
+		#header {
+		    width: 100%;
+		    height: 56px;
+		    background: #333;
+		    background: rgba(47,47,47,0.98);
+		    z-index: 9997;
+		    text-align: center;
+		}
+		#content{
+			width: 300px;
+			min-height: 310px;
+			padding: 20px 40px;
+			background: #ffffff;
+			border-radius: 8px;
+			border: 1px solid rgb(236, 236, 236);
+			display: block;
+			margin: 0 auto;
+			text-align: center;
+			margin-top: 80px;
+		}
+		.btn-primary {
+		    background:rgb(234, 76, 137);
+		    color: #ffffff !important;
+	        border-radius: 40px;
+		    text-align: center;
+		    line-height: 30px;
+		    min-width: 100px;
+		    padding: 5px 30px;
+		    text-decoration: none;
+		    font-size: 14px;
+		    text-align: center;
+		    cursor: pointer;
+		    display: inline-block;
+		    -webkit-transition: all 0.2s ease-in-out;
+		    -moz-transition: all 0.2s ease-in-out;
+		    -ms-transition: all 0.2s ease-in-out;
+		    -o-transition: all 0.2s ease-in-out;
+		    transition: all 0.2s ease-in-out;
+		    margin-top:60px;
+		}
+		.full{
+			width: 100%;
+		}
+		.row{
+			display: block;
+		}
+		.label{
+			display: inline-block;
+			margin-right: 30px;
+		}
+		#status{
+			width: 100%;
+		    margin-top: 30px;
+		    border: 1px solid #EA4C89;
+		    color: #EA4C89;
+		    padding: 10px 0;
+		    border-radius: 4px;
+		    display: none;
+		}
+		.block{
+			display:block!important;
+		}
+		.logo-app{
+			display:block;
+			margin:0 auto;
+			padding-top: 8px;
+		}
+
+	</style>
+	 <script src="js/options.js"></script>
+</head>
+<body>
+
+<header id="header"><img class="logo-app" src="images/logo-app.png" alt=""></header>
+<div id="content">
+
+		<h3 class="full">Options:</h3>
+
+		<label class="full row">
+			<h4 class="label">Show Desktop Notifications</h4>
+			<input type="checkbox" id="notifications">
+		</label>
+
+		<div id="save" class="btn-primary">Save</div>
+
+		<div id="status">Options saved</div>
+		
+</div>
+
+</body>
+</html>
