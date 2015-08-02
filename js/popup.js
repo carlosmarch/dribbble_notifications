@@ -39,31 +39,31 @@
 
     function printList(data){
 
-          var itemslist = $(data).find('.activity-mini');
-          var news      = $(data).find('.new-activity');
-          
-          //insert
-          $('#container').html(itemslist);
+        var itemslist = $(data).find('.activity-mini');
+        var news = $(data).find('.new-activity');
 
-          //add plus icon
-          $('#container ul li:not(:last-child)').each(function(){
-              $(this).append('<div class="more-info"><span class="plus">+</span></div>');
-          });
+        //insert
+        $('#container').html(itemslist);
 
-          //fix url
-          $('#container ul.activity-mini li a').each(function() {
-              $(this).attr('href', 'http://dribbble.com' + $(this).attr('href')).attr("target","_blank");
-          });
-         
-          isRendered();
-          
+        //add plus icon
+        $('#container ul li:not(:last-child)').each(function () {
+            $(this).append('<div class="more-info"><span class="plus">+</span></div>');
+        });
+
+        //fix url
+        $('#container ul.activity-mini li a').each(function () {
+            $(this).attr('href', 'http://dribbble.com' + $(this).attr('href')).attr("target", "_blank");
+        });
+
+        isRendered();
+
     };
 
 
     function getPlayerData(playerId){
         if(typeof playerId === 'string'){
             getPlayerBio(playerId, printPlayerBioTPL);
-            getPlayerShots(playerId);   
+            getPlayerShots(playerId, printPlayerShotTPL);
         }else{
             //error - is player undefined
             printErrorTPL();
@@ -84,38 +84,21 @@
         $.jribbble.users(playerId).then(callback);
     }
 
-    function getPlayerShots(playerId){
-        $.jribbble.users(playerId).shots().then(function (playerShots) {
-            console.log('getPlayerShots', playerShots)
-            var userHasShots = playerShots.length > 0;
-              if( userHasShots ){
-                  //User is playing
-                  printPlayerShotTPL( playerShots );
-              }else{
-                  //User doesn't have shots
-                  printUserNotPlayingTPL( playerId );
-              }
-        });
+    function getPlayerShots(playerId, callback) {
+        $.jribbble.users(playerId).shots().then(callback);
     }
 
-    function getPlayerBioExtraInfo(playerId, extraData){
-        $.jribbble.users(playerId).then(function (player) {
-            var notiText  =  extraData;
-            showPlayerNotification(player,notiText)
-        });
-    }
+    function fillNotification(newerActivityplayerId, newerActivityText) {
+        $.jribbble.users(newerActivityplayerId).then(success, error);
 
+        function success(player) {
+            manageNews(player, newerActivityText);
+        };
 
-    function isPlayer(playerId){
-        $.jribbble.users(playerId).shots().then(function (playerShots) {
-            console.log('isPlayer', playerShots)
-            var userHasShots = playerShots.length > 0;
-              if( userHasShots ){
-                  return true;
-              }else{
-                  return false;
-              }
-        });
+        function error(jqxhr) {
+            //err
+        };
+
     }
 
     /**
@@ -134,16 +117,15 @@
         var news = $(data).find('.new-activity');
 
 
-        if( !news.length ){
-            
-            manageNews(newerActivityplayerId , newerActivityText);
+        if (news.length) {
+            fillNotification(newerActivityplayerId, newerActivityText);
 
         }else{
             clearBadge();
         }
     }
 
-    function manageNews(newerActivityplayerId , newerActivityText){
+    function manageNews(player, newerActivityText) {
         //console.log('there are news!');
         showBadge();
 
@@ -162,15 +144,8 @@
         function userWantsNotifications(val) {
             //val from storage
             if (val) {
-                  //show Notification default or rich
-                  //@TODO recive photo here
-                  if ( isPlayer(newerActivityplayerId) ){
-                    //set custom notification
-                    getPlayerBioExtraInfo( newerActivityplayerId, newerActivityText );
-                  }else{
-                    //set default notification
-                    showDefaultNotification( newerActivityplayerId, newerActivityText )
-                  }
+                //show Notification
+                showNotification(player, newerActivityText)
             }
         }
         
@@ -188,7 +163,7 @@
         $(".see-all").text('See all incoming activity');
     }
 
-    var showPlayerNotification = function (player,notiText){
+    var showNotification = function (player, notiText) {
       var notifId = player.username
       chrome.notifications.create( notifId ,{   
           type      : "basic",
@@ -205,22 +180,6 @@
           
     }
 
-    var showDefaultNotification = function (player,notiText){
-      var notifId = player;
-      chrome.notifications.create( notifId ,{   
-          type      : "basic",
-          title     : player,
-          message   : notiText,
-          iconUrl   : 'images/icon48.png'
-          // buttons: [
-          //   { title: 'Go' },
-          //   { title: 'Ignore' }
-          // ]
-      }, function() {
-          ///created
-        });
-          
-    }
 
     /* Respond to the user's clicking on the notification message-body */
     chrome.notifications.onClicked.addListener(function(notifId) {
@@ -261,10 +220,11 @@
 
     var printPlayerBioTPL = function (player){
         //DETAIL PROFILE INFO
+        console.log(player)
           var html = [];
-          html.push('<div id="top"><div id="return"><span class="close">X</span></div><a class="profile_image" href="' + player.url + '" target="_blank"><img src="' + player.avatar_url + '" alt=""></a>');
-          html.push('<h3 id="name">' + player.name + ' / ' + player.location + '</h3></div>');       
-          html.push('<ul id="profile_data"><li id="n_shots"><span class="number"><a href="' + player.url + '" target="_blank">' + player.shots_count + '</a></span><b class="text">Shots</b></li>');
+        html.push('<div id="top"><div id="return"><span class="close">X</span></div><a class="profile_image" href="' + player.html_url + '" target="_blank"><img src="' + player.avatar_url + '" alt=""></a>');
+          html.push('<h3 id="name">' + player.name + ' / ' + player.location + '</h3></div>');
+        html.push('<ul id="profile_data"><li id="n_shots"><span class="number"><a href="' + player.html_url + '" target="_blank">' + player.shots_count + '</a></span><b class="text">Shots</b></li>');
         html.push('<li id="n_following"><span class="number"><a href="http://dribbble.com/' + player.username + '/following" target="_blank">' + player.followings_count + '</a></span><b class="text">Following</b></li>');
           html.push('<li id="n_followers"><span class="number"><a href="http://dribbble.com/' + player.username + '/followers" target="_blank">' + player.followers_count + '</a></span><b class="text">Followers</b></li>');
           //html.push('<li id="n_draftees"><span class="number">' + player.rebounds_count + '</span><b class="text">Rebounds</b></li>');
@@ -276,21 +236,13 @@
 
     function printPlayerShotTPL(playerShots){
         //SHOT INFO IN BOTTOM
+        console.log(playerShots)
         var html = [];
         html.push('<div id="latest_shot"><a href="' + playerShots[0].html_url + '" target="_blank"><img class="shot-image" src="' + playerShots[0].images.normal + '" ');
         html.push('alt="' + playerShots[0].title + '"></a><h3>' + playerShots[0].title + '</h3></div>');
-        
+
         $('#detail').append( html.join('') );
     }
-                      
-
-    function printUserNotPlayingTPL(playerId){
-        var html = [];
-        html.push('<div id="return"><span class="close">X</span></div><div class="err">It seems that ');
-        html.push('<a href="http://dribbble.com/' + playerId + '" target="_blank">' + playerId + ' </a> is not playing at dribble...<div>');
-        $('#detail').html( html.join('') );
-    }
-
 
     function printErrorTPL(){
       $('#detail').html('<div id="return"><span class="close">X</span></div><div class="err">It seems that something went wrong...<div>')
