@@ -40,7 +40,6 @@
     function printList(data){
 
         var itemslist = $(data).find('.activity-mini');
-        var news = $(data).find('.new-activity');
 
         //insert
         $('#container').html(itemslist);
@@ -118,6 +117,7 @@
 
 
         if (news.length) {
+            //console.log('there are news!');
             fillNotification(newerActivityplayerId, newerActivityText);
 
         }else{
@@ -126,7 +126,7 @@
     }
 
     function manageNews(player, newerActivityText) {
-        //console.log('there are news!');
+
         showBadge();
 
         //async brainfuck for reading storage value
@@ -163,12 +163,14 @@
         $(".see-all").text('See all incoming activity');
     }
 
-    var showNotification = function (player, notiText) {
+    var showNotification = function (player, newerActivityText) {
+
       var notifId = player.username
+
       chrome.notifications.create( notifId ,{   
           type      : "basic",
           title     : player.username,
-          message   : notiText,
+          message: newerActivityText,
           iconUrl   : player.avatar_url
           // buttons: [
           //   { title: 'Go' },
@@ -219,7 +221,7 @@
     */
 
     var printPlayerBioTPL = function (player){
-        //DETAIL PROFILE INFO
+        //PROFILE INFO
         console.log(player)
           var html = [];
         html.push('<div id="top"><div id="return"><span class="close">X</span></div><a class="profile_image" href="' + player.html_url + '" target="_blank"><img src="' + player.avatar_url + '" alt=""></a>');
@@ -235,7 +237,7 @@
 
 
     function printPlayerShotTPL(playerShots){
-        //SHOT INFO IN BOTTOM
+        //SHOT INFO
         console.log(playerShots)
         var html = [];
         html.push('<div id="latest_shot"><a href="' + playerShots[0].html_url + '" target="_blank"><img class="shot-image" src="' + playerShots[0].images.normal + '" ');
