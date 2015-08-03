@@ -21,7 +21,7 @@
     "scripts": [
         "js/jquery.js",
         "js/jribbble.js",
-        "js/popup.js"
+      "js/background.js"
     ]
   },
   "options_page": "options.html",

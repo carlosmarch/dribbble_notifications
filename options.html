@@ -13,12 +13,12 @@
 		}
 
 		#header {
-		    width: 100%;
-		    height: 56px;
-		    background: #333;
-		    background: rgba(47,47,47,0.98);
-		    z-index: 9997;
-		    text-align: center;
+			width: 100%;
+			height: 56px;
+			background: #333;
+			background: rgba(47, 47, 47, 0.98);
+			z-index: 9997;
+			text-align: center;
 		}
 		#content{
 			width: 300px;
@@ -33,46 +33,55 @@
 			margin-top: 80px;
 		}
 		.btn-primary {
-		    background:rgb(234, 76, 137);
-		    color: #ffffff !important;
-	        border-radius: 40px;
-		    text-align: center;
-		    line-height: 30px;
-		    min-width: 100px;
-		    padding: 5px 30px;
-		    text-decoration: none;
-		    font-size: 14px;
-		    text-align: center;
-		    cursor: pointer;
-		    display: inline-block;
-		    -webkit-transition: all 0.2s ease-in-out;
-		    -moz-transition: all 0.2s ease-in-out;
-		    -ms-transition: all 0.2s ease-in-out;
-		    -o-transition: all 0.2s ease-in-out;
-		    transition: all 0.2s ease-in-out;
-		    margin-top:60px;
+			background: rgb(234, 76, 137);
+			color: #ffffff !important;
+			border-radius: 40px;
+			text-align: center;
+			line-height: 30px;
+			min-width: 100px;
+			padding: 5px 30px;
+			text-decoration: none;
+			font-size: 14px;
+			text-align: center;
+			cursor: pointer;
+			display: inline-block;
+			-webkit-transition: all 0.2s ease-in-out;
+			-moz-transition: all 0.2s ease-in-out;
+			-ms-transition: all 0.2s ease-in-out;
+			-o-transition: all 0.2s ease-in-out;
+			transition: all 0.2s ease-in-out;
+			margin-top: 60px;
 		}
 		.full{
 			width: 100%;
 		}
 		.row{
 			display: block;
+			clear: both;
+			height: 50px;
 		}
 		.label{
 			display: inline-block;
 			margin-right: 30px;
+			float: left;
 		}
 		#status{
 			width: 100%;
-		    margin-top: 30px;
-		    border: 1px solid #EA4C89;
-		    color: #EA4C89;
-		    padding: 10px 0;
-		    border-radius: 4px;
-		    display: none;
+			margin-top: 30px;
+			border: 1px solid #EA4C89;
+			color: #EA4C89;
+			padding: 10px 0;
+			border-radius: 4px;
+			display: none;
 		}
-		.block{
-			display:block!important;
+
+		input, select {
+			float: right;
+			margin-top: 15px;
+		}
+
+		.block {
+			display: block !important;
 		}
 		.logo-app{
 			display:block;
@@ -81,24 +90,41 @@
 		}
 
 	</style>
-	 <script src="js/options.js"></script>
+	<script src="js/options.js"></script>
 </head>
 <body>
 
 <header id="header"><img class="logo-app" src="images/logo-app.png" alt=""></header>
 <div id="content">
 
-		<h3 class="full">Options:</h3>
+	<h3 class="full">Options:</h3>
 
-		<label class="full row">
-			<h4 class="label">Show Desktop Notifications</h4>
-			<input type="checkbox" id="notifications">
-		</label>
+	<label class="full row">
+		<h4 class="label">Show Desktop Notifications</h4>
+		<input type="checkbox" id="notifications">
+	</label>
 
-		<div id="save" class="btn-primary">Save</div>
+	<label class="full row">
+		<h4 class="label">Clear activity from extension</h4>
+		<input type="checkbox" id="clear">
+	</label>
 
-		<div id="status">Options saved</div>
-		
+	<label class="full row">
+		<h4 class="label">Check Interval</h4>
+		<select id="interval">
+			<option value="5000" selected>5 secs.</option>
+			<option value="30000">30 secs.</option>
+			<option value="60000">1 min.</option>
+			<option value="300000">5 mins.</option>
+			<option value="1800000">30 mins.</option>
+			<option value="3600000">1 hour</option>
+		</select>
+	</label>
+
+	<div id="save" class="btn-primary">Save</div>
+
+	<div id="status">Options saved</div>
+
 </div>
 
 </body>
