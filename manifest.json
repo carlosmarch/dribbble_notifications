@@ -2,14 +2,14 @@
   "name": "Dribbble notifications",
   "version": "1.1.1",
   "permissions": [
-      "<all_urls>",
-      "notifications",
-      "storage"
+    "<all_urls>",
+    "notifications",
+    "storage"
   ],
   "browser_action": {
-      "default_title": "Dribbble activity",
-      "default_icon": "images/icon.png",
-      "default_popup": "popup.html"
+    "default_title": "Dribbble activity",
+    "default_icon": "images/icon.png",
+    "default_popup": "popup.html"
   },
   "icons": {
     "16": "images/icon16.png",
@@ -19,15 +19,15 @@
   },
   "background": {
     "scripts": [
-        "js/jquery.js",
-        "js/jribbble.js",
+      "js/jquery.js",
+      "js/jribbble.js",
       "js/background.js"
     ]
   },
   "options_page": "options.html",
   "manifest_version": 2,
   "content_security_policy": "script-src 'self'; object-src 'self'"
-  
+
   //"key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC9ZqWN3N4ThkR1XsMxDwh5xujc4oCY4e0WPYFyw/OSqPCykN42hvg2dsBbz87dLYai7vsaxIcz4t0eFc0T6ZOLA3Z+3VlJ0fdNKDJfKl1CmW7i3LJnJB1eqcKd0uqdtN8WcmEV5YoJRskqYQ0NBEdP99dcTnAGeoJJr1/Ruj0itQIDAQAB",
   //"update_url": "http://clients2.google.com/service/update2/crx",
 }

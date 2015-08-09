@@ -2,19 +2,25 @@
 
 (function($) {
 
+    //send message to background.js
+    chrome.runtime.sendMessage({
+            is_open: true
+        },
+        function (response) {
+            console.log(response);
+        }
+    );
 
     chrome.runtime.onMessage.addListener(
         function (data, sender, sendResponse) {
             //Got message from background.js with activity list
-            //console.log('this is webdata',webdata);
+            //console.log('this is webdata',data);
             //send response to background.js
-            sendResponse("opened");
-
+            sendResponse('opened');
             printList(data.activity_items);
 
         }
     );
-
 
     /**
      *
@@ -110,13 +116,13 @@
         //PROFILE INFO
         //console.log(player)
         var html = [];
-        html.push('<div id="top"><div id="return"><span class="close">X</span></div><a class="profile_image" href="' + player.html_url + '" target="_blank"><img src="' + player.avatar_url + '" alt=""></a>');
+        html.push('<div id="top"><img class="blur" src="' + player.avatar_url + '" alt=""><div id="return"><span class="close">X</span></div><a class="profile_image" href="' + player.html_url + '" target="_blank"><img src="' + player.avatar_url + '" alt=""></a>');
         html.push('<h3 id="name">' + player.name + ' / ' + player.location + '</h3></div>');
         html.push('<ul id="profile_data"><li id="n_shots"><span class="number"><a href="' + player.html_url + '" target="_blank">' + player.shots_count + '</a></span><b class="text">Shots</b></li>');
         html.push('<li id="n_following"><span class="number"><a href="http://dribbble.com/' + player.username + '/following" target="_blank">' + player.followings_count + '</a></span><b class="text">Following</b></li>');
-        html.push('<li id="n_followers"><span class="number"><a href="http://dribbble.com/' + player.username + '/followers" target="_blank">' + player.followers_count + '</a></span><b class="text">Followers</b></li>');
+        html.push('<li id="n_followers"><span class="number"><a href="http://dribbble.com/' + player.username + '/followers" target="_blank">' + player.followers_count + '</a></span><b class="text">Followers</b></li></ul>');
         //html.push('<li id="n_draftees"><span class="number">' + player.rebounds_count + '</span><b class="text">Rebounds</b></li>');
-        html.push('</ul><div id="profile_pixels"><span class="number_pixels">' + player.shots_count * 120000 + '</span><b class="text_pixels">Pixels Dribbbled</b></div>');
+        //html.push('<div id="profile_pixels"><span class="number_pixels">' + player.shots_count * 120000 + '</span><b class="text_pixels">Pixels Dribbbled</b></div>');
 
         $('#detail').html(html.join(''));
     }
@@ -130,11 +136,6 @@
         html.push('alt="' + playerShots[0].title + '"></a><h3>' + playerShots[0].title + '</h3></div>');
 
         $('#detail').append(html.join(''));
-    }
-
-    function printErrorTPL() {
-        $('#detail').html('<div id="return"><span class="close">X</span></div><div class="err">It seems that something went wrong...<div>')
-            .fadeIn().animate({marginLeft: "0%"}, 25);
     }
 
 

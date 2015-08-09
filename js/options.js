@@ -13,7 +13,7 @@ function restore_options() {
   }, function(items) {
     document.getElementById('notifications').checked = items.showNotifications;
     document.getElementById('clear').checked = items.clearActivity;
-    document.getElementById('interval').options[document.getElementById('interval').selectedIndex].value = items.intervalTimeout;
+    document.getElementById('interval').value = items.intervalTimeout;
 
   });
 }
@@ -21,7 +21,7 @@ function restore_options() {
 function save_options() {
   var showNotifications = document.getElementById('notifications').checked;
   var clearActivity = document.getElementById('clear').checked;
-  var intervalTimeout = document.getElementById('interval').options[document.getElementById('interval').selectedIndex].value;
+  var intervalTimeout = document.getElementById('interval').value;
 
   chrome.storage.sync.set({
     showNotifications: showNotifications,
@@ -36,4 +36,15 @@ function save_options() {
       status.className = '';
     }, 750);
   });
+
+  chrome.runtime.sendMessage({
+    method: 'save',
+    showNotifications: showNotifications,
+    clearActivity: clearActivity,
+    intervalTimeout: intervalTimeout
+  }, function (response) {
+    console.log(response);
+  });
+
+
 }

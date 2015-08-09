@@ -2,12 +2,36 @@
  * Created by carlos on 3/8/15.
  */
 
-var seconds = 5000;
+
+chrome.runtime.onMessage.addListener(function (data, sender, sendResponse) {
+    //Got message from popup.js is_open = true
+    //send response with data to popup.js
+    console.log(data)
+
+    if (data.is_open) {
+        sendResponse('is open so check')
+        check();
+
+    }
+    else if (data.method == 'save') {
+        sendResponse('is saved so redefine interval');
+        redefineInterval(data.intervalTimeout);
+    }
+});
+
+
+var seconds;
 var interval_id;
 var notiArr = [];
+check();
 
-(function check() {
-    //console.log('Checking for Dribbble activity...');
+
+function check() {
+    if (!seconds) {
+        //todo get seconds from storage value
+        redefineInterval('5000');
+    }
+    console.log('Checking for Dribbble activity...', seconds);
 
     clearInterval(interval_id);
     interval_id = setInterval(check, seconds);
@@ -16,17 +40,8 @@ var notiArr = [];
     req.open('GET', 'http://dribbble.com');
     req.onload = init;
     req.send();
-})();
-
-function checkActivity() {
-    //https://dribbble.com/activity
-    var reqCheck = new XMLHttpRequest();
-    reqCheck.open('GET', 'https://dribbble.com/activity');
-    reqCheck.onload = function () {
-        console.log('Clear Dribbble activity.')
-    };
-    reqCheck.send();
 }
+
 
 
 function init() {
@@ -42,24 +57,6 @@ function init() {
     }
 };
 
-function sendData(data) {
-    //send full web to popup.js
-    chrome.runtime.sendMessage({
-            activity_items: data
-        },
-        function (response) {
-            //get response from popup.js
-            if (response == 'opened') {
-                console.log(response, 'go and check if clear badge & activity');
-                manageClearActivity();
-                //TODO check when open
-            }
-
-        }
-    );
-}
-
-
 function checkNews(data) {
     //reading the html
     var $data = $(data);
@@ -74,8 +71,36 @@ function checkNews(data) {
         fillNotification(newerActivityplayerId, newerActivityText);
 
     } else {
-        //clearBadge();
+        clearBadge();
     }
+}
+
+
+function sendData(data) {
+    //send full web to popup.js
+    chrome.runtime.sendMessage({
+            activity_items: data
+        },
+        function (response) {
+            //get response from popup.js
+            if (response == 'opened') {
+                //console.log(response, 'go and check if clear badge & activity');
+                manageClearActivity();
+            }
+        }
+    );
+}
+
+function checkActivity() {
+    //https://dribbble.com/activity
+    var reqCheck = new XMLHttpRequest();
+    reqCheck.open('GET', 'https://dribbble.com/activity');
+    reqCheck.onload = function () {
+        console.log('Clear Dribbble activity.')
+        clearBadge();
+    };
+    reqCheck.send();
+
 }
 
 /**
@@ -92,7 +117,6 @@ function fillNotification(newerActivityplayerId, newerActivityText) {
 
     function success(player) {
         manageNews(player, newerActivityText);
-
     };
 
     function error(jqxhr) {
@@ -128,6 +152,7 @@ function manageNews(player, newerActivityText) {
 
     function userWantsNotifications(val) {
         //val from storage
+        console.log('showNotifications:', val)
         if (val) {
             //show Notification
             showNotification(player, newerActivityText);
@@ -150,10 +175,11 @@ function manageClearActivity() {
     }
 
     function userWantsClearActivity(val) {
+        console.log('clearActivity:', val)
         //val from storage
         if (val) {
             //check activity page & clear badge
-            console.log('userWantsClearActivity', val)
+            //console.log('userWantsClearActivity', val)
             checkActivity();
         }
     }
@@ -175,11 +201,14 @@ function manageInterval() {
 
     function userWantsTimeout(val) {
         //val from storage
-        //TODO make seconds global
-        var seconds = val;
-        console.log(seconds, val)
+        redefineInterval(val)
     }
 };
+
+function redefineInterval(val) {
+    seconds = val;
+}
+
 /**
  *
  * NOTIFICATIONS
@@ -200,10 +229,10 @@ function clearBadge() {
 
 var showNotification = function (player, newerActivityText) {
 
-    var notiExists = notiArr.indexOf(newerActivityText);
-    console.log(notiArr)
+    var notiExists = notiArr.indexOf(player.username);
+    //console.log(notiArr)
     if (notiExists == -1) {
-        var notifId = newerActivityText;
+        var notifId = player.username;
         notiArr.push(notifId);
 
         chrome.notifications.create(notifId, {
