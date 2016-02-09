@@ -57,7 +57,7 @@
     //*****************************
 
     function loginFirst() {
-        $('#container .load').html('Log in first!');
+        $('.load').html('Log in first!');
     };
 
     function printList(data) {
@@ -119,9 +119,11 @@
     var printPlayerBioTPL = function (player) {
         //PROFILE INFO
         //console.log(player)
+        var location = (player.location) ? '/' + player.location : '';
+
         var html = [];
         html.push('<div id="top"><img class="blur" src="' + player.avatar_url + '" alt=""><div id="return"><span class="close">X</span></div><a class="profile_image" href="' + player.html_url + '" target="_blank"><img src="' + player.avatar_url + '" alt=""></a>');
-        html.push('<h3 id="name">' + player.name + ' / ' + player.location + '</h3></div>');
+        html.push('<h3 id="name">' + player.name + location + '</h3></div>');
         html.push('<ul id="profile_data"><li id="n_shots"><span class="number"><a href="' + player.html_url + '" target="_blank">' + player.shots_count + '</a></span><b class="text">Shots</b></li>');
         html.push('<li id="n_following"><span class="number"><a href="http://dribbble.com/' + player.username + '/following" target="_blank">' + player.followings_count + '</a></span><b class="text">Following</b></li>');
         html.push('<li id="n_followers"><span class="number"><a href="http://dribbble.com/' + player.username + '/followers" target="_blank">' + player.followers_count + '</a></span><b class="text">Followers</b></li></ul>');
@@ -134,10 +136,17 @@
 
     function printPlayerShotTPL(playerShots) {
         //SHOT INFO
-        //console.log(playerShots)
+        console.log(playerShots)
+        if (typeof playerShots !== 'undefined' && playerShots.length > 0) {
+            // the array is defined and has at least one element
+            var latestShot = '<a href="' + playerShots[0].html_url + '" target="_blank"><img class="shot-image" src="' + playerShots[0].images.normal + '" alt="' + playerShots[0].title + '"></a>';
+            var latestShotTitle = playerShots[0].title;
+        } else {
+            var latestShot = '';
+            var latestShotTitle = '<span class="no-shot">User is not playing</span>';
+        }
         var html = [];
-        html.push('<div id="latest_shot"><a href="' + playerShots[0].html_url + '" target="_blank"><img class="shot-image" src="' + playerShots[0].images.normal + '" ');
-        html.push('alt="' + playerShots[0].title + '"></a><h3>' + playerShots[0].title + '</h3></div>');
+        html.push('<div id="latest_shot">' + latestShot + '<h3>' + latestShotTitle + '</h3></div>');
 
         $('#detail').append(html.join(''));
     }

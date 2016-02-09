@@ -6,7 +6,7 @@
  */
 
 //*****************************
-//RUNTIME MESSAGES
+// RUNTIME MESSAGES
 //*****************************
 
 chrome.runtime.onMessage.addListener(function (data, sender, sendResponse) {
@@ -35,7 +35,7 @@ var lastHandler = null;
 var options = {
     showNotifications: true,
     clearActivity: true,
-    intervalTimeout: 5000
+    intervalTimeout: 60000
 };
 
 //init()
@@ -45,6 +45,7 @@ start(check);
 
 //*****************************
 // TIMER FUNCTIONS
+// thanks to @roger
 //*****************************
 
 
@@ -92,9 +93,9 @@ function init() {
 
 // Check Storage Values for: showNotifications, clearActivity & intervalTimeout
 // If values are EMPTY set DEFAULT options
-// @showNotifications : true
-// @clearActivity : true
-// @intervalTimeout : 5000
+// @showNotifications : options.showNotifications
+// @clearActivity : options.clearActivity
+// @intervalTimeout : options.intervalTimeout
 function setStorageDefaultValues() {
     chrome.storage.sync.get(null, function (items) {
         try {
