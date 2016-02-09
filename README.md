@@ -1,4 +1,4 @@
-<img src="screenshots/1.png" width="100%"></img>
+<img src="images/banner.png" width="100%"></img>
 
 # Notifffy - Dribbble Notifications
 Desktop notifications for your Dribbble activity.
