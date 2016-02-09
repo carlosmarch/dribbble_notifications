@@ -1,55 +1,164 @@
-/**
- * Created by carlos on 3/8/15.
+/*
+ * Copyright (c) 2015. Carlos March
+ * This scripts init the APP
+ * We first set default values on storage
+ * Then we call dribbble to manage user notifications
  */
 
+//*****************************
+//RUNTIME MESSAGES
+//*****************************
 
 chrome.runtime.onMessage.addListener(function (data, sender, sendResponse) {
-    //Got message from popup.js is_open = true
-    //send response with data to popup.js
-    console.log(data)
 
     if (data.is_open) {
-        sendResponse('is open so check')
-        check();
+        //Got message from popup.js is_open = true
+        //on sendData we send response with data to popup.js
+        //sendResponse('is open so check');
+        start(check);
 
     }
-    else if (data.method == 'save') {
-        sendResponse('is saved so redefine interval');
-        redefineInterval(data.intervalTimeout);
+    if (data.method == 'save') {
+        //Got message from options.js data.method = 'save'
+        //send response to options.js
+        //sendResponse('is saved so redefine interval');
+        //check data with new values
+        //console.log(data.intervalTimeout)
+        changeTime(data.intervalTimeout);
     }
 });
 
 
-var seconds;
-var interval_id;
-var notiArr = [];
-check();
+var timer = null;
+var lastHandler = null;
+
+var options = {
+    showNotifications: true,
+    clearActivity: true,
+    intervalTimeout: 5000
+};
+
+//init()
+setStorageDefaultValues();
+start(check);
 
 
-function check() {
-    if (!seconds) {
-        //todo get seconds from storage value
-        redefineInterval('5000');
-    }
-    console.log('Checking for Dribbble activity...', seconds);
+//*****************************
+// TIMER FUNCTIONS
+//*****************************
 
-    clearInterval(interval_id);
-    interval_id = setInterval(check, seconds);
 
-    req = new XMLHttpRequest();
-    req.open('GET', 'http://dribbble.com');
-    req.onload = init;
-    req.send();
+function start(handle) {
+    lastHandler = handle;
+    handle();
+    timer = setInterval(handle, options.intervalTimeout)
+}
+
+function restart() {
+    stop();
+    start(lastHandler);
+}
+
+function stop() {
+    clearInterval(timer);
+}
+
+function changeTime(time) {
+    options.intervalTimeout = time;
+    restart();
+    console.log('changeTime to', options.intervalTimeout)
 }
 
 
+//*****************************
+// INIT APP FUNCTIONS
+//*****************************
 
+
+//Init checking data from storage - function setStorageDefaultValues()
+//Then set seconds timeout variable - function manageInterval()
+//The call to dribbble site
+// @TODO REVIEW BECAUSE IT'S ASYNC
 function init() {
+    $.when(
+        setStorageDefaultValues(),
+        manageInterval()
+    ).done(function () {
+            //Then Check page
+            start(check);
+        });
+}
+
+
+// Check Storage Values for: showNotifications, clearActivity & intervalTimeout
+// If values are EMPTY set DEFAULT options
+// @showNotifications : true
+// @clearActivity : true
+// @intervalTimeout : 5000
+function setStorageDefaultValues() {
+    chrome.storage.sync.get(null, function (items) {
+        try {
+            if (chrome.runtime.lastError) {
+                console.warn(chrome.runtime.lastError.message);
+            } else {
+
+                //console.log(items);
+
+                //Get showNotifications
+                if (!items.showNotifications) {
+                    //Set Default showNotifications value to true
+                    chrome.storage.sync.set({
+                        showNotifications: options.showNotifications
+                    });
+                }
+
+                //Get clearActivity
+                if (!items.clearActivity) {
+                    //Set Default clearActivity value to true
+                    chrome.storage.sync.set({
+                        clearActivity: options.clearActivity
+                    });
+                }
+
+                //Get intervalTimeout
+                if (!items.intervalTimeout) {
+                    //Set Default intervalTimeout value to 5000
+                    chrome.storage.sync.set({
+                        intervalTimeout: options.intervalTimeout
+                    });
+                }
+
+            }
+        } catch (exception) {
+            //window.alert('exception.stack: ' + exception.stack);
+            console.error((new Date()).toJSON(), "exception.stack:", exception.stack);
+        }
+    });
+}
+
+
+// INIT API CALL
+// Call to dribbble site
+function check() {
+    console.log('Checking for Dribbble activity...');
+
+    req = new XMLHttpRequest();
+    req.open('GET', 'http://dribbble.com');
+    req.onload = initApiCall;
+    req.send();
+
+}
+
+
+// Scrap data
+// Init rendering functions
+function initApiCall() {
     var data = req.responseText;
     var itemslist = $(data).find('.activity-mini');
 
     if (!itemslist.length) {
-        //can't retrieve activity list
+        //Can't retrieve activity list
+        //User is not logged in
         //loginFirst();
     } else {
         checkNews(data);
@@ -57,6 +166,10 @@ function init() {
     }
 };
 
+
+// Check if there are news and proceed to check:
+// if user wants desktop notifications
+// and show the notification badge
 function checkNews(data) {
     //reading the html
     var $data = $(data);
@@ -67,7 +180,7 @@ function checkNews(data) {
     var news = $data.find('.new-activity');
 
     if (news.length) {
-        console.log('there are news!');
+        //console.log('there are news!');
         fillNotification(newerActivityplayerId, newerActivityText);
 
     } else {
@@ -78,6 +191,7 @@ function checkNews(data) {
 
 function sendData(data) {
     //send full web to popup.js
+    //On popup.js the data is rendered
     chrome.runtime.sendMessage({
             activity_items: data
         },
@@ -93,26 +207,27 @@ function sendData(data) {
 
 function checkActivity() {
     //https://dribbble.com/activity
+    //Opens new tab with dribbble activity page
+    //this check activity notification
     var reqCheck = new XMLHttpRequest();
     reqCheck.open('GET', 'https://dribbble.com/activity');
     reqCheck.onload = function () {
-        console.log('Clear Dribbble activity.')
+        //console.log('Clear Dribbble activity.')
         clearBadge();
     };
     reqCheck.send();
 
 }
 
-/**
- *
- * JRIBBBLE API CALL
- *
- *
- */
+
+//******************************
+// JRIBBBLE API CALL
+//*****************************
 
 $.jribbble.setToken('a856179b187e185d438d1fd24d3d5408b57e52bb3d8607b8fdeeda9239c14278');
 
 function fillNotification(newerActivityplayerId, newerActivityText) {
+    //We need the player photo so call api with played id
     $.jribbble.users(newerActivityplayerId).then(success, error);
 
     function success(player) {
@@ -120,19 +235,16 @@ function fillNotification(newerActivityplayerId, newerActivityText) {
     };
 
     function error(jqxhr) {
-        //err
-        console.log('error', jqxhr)
+        //error
+        console.error('error', jqxhr)
     };
 
 }
 
 
-/**
- *
- * STORAGE
- *
- *
- */
+//*****************************
+// STORAGE
+//*****************************
 
 function manageNews(player, newerActivityText) {
 
@@ -152,6 +264,7 @@ function manageNews(player, newerActivityText) {
 
     function userWantsNotifications(val) {
         //val from storage
+        //@param boolean default true
         console.log('showNotifications:', val)
         if (val) {
             //show Notification
@@ -185,6 +298,7 @@ function manageClearActivity() {
     }
 };
 
+
 function manageInterval() {
 
     //async brainfuck for reading storage value
@@ -201,24 +315,18 @@ function manageInterval() {
 
     function userWantsTimeout(val) {
         //val from storage
-        redefineInterval(val)
+        changeTime(val)
     }
 };
 
-function redefineInterval(val) {
-    seconds = val;
-}
 
-/**
- *
- * NOTIFICATIONS
- *
- *
- */
+//*****************************
+// NOTIFICATIONS
+//*****************************
 
 function showBadge() {
     chrome.browserAction.setBadgeText({text: 'NEW'});
-    chrome.browserAction.setBadgeBackgroundColor({color: '#ea4c89'});
+    chrome.browserAction.setBadgeBackgroundColor({color: ' '});
     $(".see-all").text('Check & Clear the badge!');
 }
 
@@ -227,6 +335,8 @@ function clearBadge() {
     $(".see-all").text('See all incoming activity');
 }
 
+
+var notiArr = [];
 var showNotification = function (player, newerActivityText) {
 
     var notiExists = notiArr.indexOf(player.username);
@@ -251,6 +361,10 @@ var showNotification = function (player, newerActivityText) {
 
 }
 
+
+//*****************************
+// NOTIFICATION INTERACTION
+//*****************************
 
 /* Respond to the user's clicking on the notification message-body */
 chrome.notifications.onClicked.addListener(function (notifId) {

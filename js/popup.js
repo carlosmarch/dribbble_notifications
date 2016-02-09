@@ -1,33 +1,44 @@
-// Copyright (c) 2015. Carlos March
+/*
+ * Copyright (c) 2015. Carlos March
+ * When popup is opened we run all functions to print data
+ * In this script we manage data for the list and the detail
+ * Also manages interaction
+ */
 
 (function($) {
 
-    //send message to background.js
+    //On open send message to background.js
     chrome.runtime.sendMessage({
             is_open: true
         },
         function (response) {
-            console.log(response);
+            //console.log('I\'m in popup,js is_open: true || response:', response);
         }
     );
 
+    // PRINT DATA IN DOM WITH INFO
+    //Got message from background.js with activity list
     chrome.runtime.onMessage.addListener(
         function (data, sender, sendResponse) {
-            //Got message from background.js with activity list
+
             //console.log('this is webdata',data);
             //send response to background.js
-            sendResponse('opened');
-            printList(data.activity_items);
+            //sendResponse('opened');
+            if (data) {
+                printList(data.activity_items);
+            } else {
+                // there is no data
+                // we believe that user is not logged in
+                loginFirst();
+            }
+
 
         }
     );
 
-    /**
-     *
-     * JRIBBBLE API CALL
-     *
-     *
-     */
+    //*****************************
+    // JRIBBBLE API CALL
+    //*****************************
 
     $.jribbble.setToken('a856179b187e185d438d1fd24d3d5408b57e52bb3d8607b8fdeeda9239c14278');
 
@@ -41,14 +52,9 @@
     }
 
 
-
-
-    /**
-     *
-     * PRINT LIST & DOM & EVENTS
-     *
-     *
-     */
+    //*****************************
+    // PRINT LIST & DOM & EVENTS
+    //*****************************
 
     function loginFirst() {
         $('#container .load').html('Log in first!');
@@ -105,12 +111,10 @@
         }
     };
 
-    /**
-     *
-     * TEMPLATES & PRINT DATA
-     *
-     *
-     */
+
+    //*****************************
+    // TEMPLATES & PRINT DATA
+    //*****************************
 
     var printPlayerBioTPL = function (player) {
         //PROFILE INFO
@@ -139,12 +143,9 @@
     }
 
 
-    /**
-     *
-     * UX INTERACTION
-     *
-     *
-     */
+    //*****************************
+    // UX INTERACTION
+    //*****************************
 
     function showDetail() {
         $('#detail').fadeIn().animate({marginLeft: "0%"}, 100, function () {
@@ -159,12 +160,6 @@
         $('#detail').html('');
         $('body').height('');
     }
-
-
-
-
-
-
 
 
 })(jQuery);
