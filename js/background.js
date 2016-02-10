@@ -28,17 +28,28 @@ chrome.runtime.onMessage.addListener(function (data, sender, sendResponse) {
     }
 });
 
-
-var timer = null;
-var lastHandler = null;
-
+//*****************************
+// DEFAULT
+//*****************************
 var options = {
     showNotifications: true,
     clearActivity: true,
     intervalTimeout: 60000
 };
 
-//init()
+var timer = null;
+var lastHandler = null;
+
+var lastAJAX = Date.now();
+var limitAjaxCall = 10000;
+/* 10 seconds*/
+var firstTime;
+
+var scrapStorage;
+
+//*****************************
+// INIT
+//*****************************
 setStorageDefaultValues();
 start(check);
 
@@ -71,6 +82,24 @@ function changeTime(time) {
 }
 
 
+function limitAJAXCalls() {
+    if (!firstTime) {
+        // Let pass if is the first time
+        // For a better user experience
+        firstTime = true;
+        return true;
+    }
+    var now = Date.now(), diff = now - lastAJAX;
+    //console.log(now, lastAJAX, diff);
+    if (diff >= limitAjaxCall) {
+        lastAJAX = now;
+        return true;
+    } else {
+        return false;
+    }
+
+}
+
 //*****************************
 // INIT APP FUNCTIONS
 //*****************************
@@ -79,7 +108,8 @@ function changeTime(time) {
 //Init checking data from storage - function setStorageDefaultValues()
 //Then set seconds timeout variable - function manageInterval()
 //The call to dribbble site
-// @TODO REVIEW BECAUSE IT'S ASYNC
+// ACTUALLY NOT IN USE
+// @TODO REVIEW. IT'S ASYNC
 function init() {
     $.when(
         setStorageDefaultValues(),
@@ -141,12 +171,32 @@ function setStorageDefaultValues() {
 // INIT API CALL
 // Call to dribbble site
 function check() {
-    console.log('Checking for Dribbble activity...');
 
-    req = new XMLHttpRequest();
-    req.open('GET', 'http://dribbble.com');
-    req.onload = initApiCall;
-    req.send();
+    // API RATE LIMITING
+    // one each 10 seconds max
+
+    if (limitAJAXCalls()) {
+        console.log('Checking for Dribbble activity...');
+
+        req = new XMLHttpRequest();
+        req.open('GET', 'http://dribbble.com');
+        req.onload = initApiCall;
+        req.send();
+    } else {
+        // API RATE LIMITED
+        if (scrapStorage) {
+            //print stored data
+            scrapStoragePrint(scrapStorage);
+        } else {
+            // We don't have data
+            // Send message to popup.js
+            chrome.runtime.sendMessage({
+                api_limit: true
+            });
+        }
+
+
+    }
 
 }
 
@@ -156,17 +206,28 @@ function check() {
 function initApiCall() {
     var data = req.responseText;
     var itemslist = $(data).find('.activity-mini');
-
+    scrapStorage = data;
     if (!itemslist.length) {
         //Can't retrieve activity list
         //User is not logged in
-        //loginFirst();
+        //Send message to popup.js
+        chrome.runtime.sendMessage({
+            not_logged: true
+        });
+
     } else {
         checkNews(data);
         sendData(data);
     }
 };
 
+// We have stored data
+// Init rendering functions with scrapped data
+function scrapStoragePrint(scrapStorage) {
+    console.log('Printing Stored Data')
+    checkNews(scrapStorage);
+    sendData(scrapStorage);
+}
 
 // Check if there are news and proceed to check:
 // if user wants desktop notifications

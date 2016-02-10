@@ -24,12 +24,17 @@
             //console.log('this is webdata',data);
             //send response to background.js
             //sendResponse('opened');
-            if (data) {
+            if (data.activity_items) {
                 printList(data.activity_items);
-            } else {
+            } else if (data.api_limit) {
+                text = 'Api Rate Limited. <br> Please try again in a few seconds.';
+
+                statusMessage(text);
+            } else if (data.not_logged) {
                 // there is no data
                 // we believe that user is not logged in
-                loginFirst();
+                text = 'Login first!'
+                statusMessage(text);
             }
 
 
@@ -56,8 +61,8 @@
     // PRINT LIST & DOM & EVENTS
     //*****************************
 
-    function loginFirst() {
-        $('.load').html('Log in first!');
+    function statusMessage(text) {
+        $('.load').html(text);
     };
 
     function printList(data) {
