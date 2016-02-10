@@ -81,7 +81,8 @@ function changeTime(time) {
     console.log('changeTime to', options.intervalTimeout)
 }
 
-
+//Returns true or false
+//If user has reached stablished rate limit
 function limitAJAXCalls() {
     if (!firstTime) {
         // Let pass if is the first time
@@ -206,6 +207,7 @@ function check() {
 function initApiCall() {
     var data = req.responseText;
     var itemslist = $(data).find('.activity-mini');
+    //store scrapped data
     scrapStorage = data;
     if (!itemslist.length) {
         //Can't retrieve activity list
@@ -236,13 +238,12 @@ function checkNews(data) {
     //reading the html
     var $data = $(data);
     var newerActivity = $data.find('.activity-mini li:first');
-    var newerActivityText = newerActivity.text().replace(/(\r\n|\n|\r)/gm, "");
+    var newerActivityText = newerActivity.text().replace(/(\r\n|\n|\r)/gm, "").replace(/  +/g, ' ');
     var newerActivityplayerId = $(newerActivity).find('a[href]')[0].pathname.replace('/', '');
 
     var news = $data.find('.new-activity');
 
     if (news.length) {
-        //console.log('there are news!');
         fillNotification(newerActivityplayerId, newerActivityText);
 
     } else {
@@ -327,7 +328,7 @@ function manageNews(player, newerActivityText) {
     function userWantsNotifications(val) {
         //val from storage
         //@param boolean default true
-        console.log('showNotifications:', val)
+        //console.log('showNotifications:', val)
         if (val) {
             //show Notification
             showNotification(player, newerActivityText);
@@ -388,7 +389,7 @@ function manageInterval() {
 
 function showBadge() {
     chrome.browserAction.setBadgeText({text: 'NEW'});
-    chrome.browserAction.setBadgeBackgroundColor({color: ' '});
+    chrome.browserAction.setBadgeBackgroundColor({color: '#ea4c89'});
     $(".see-all").text('Check & Clear the badge!');
 }
 
@@ -411,7 +412,8 @@ var showNotification = function (player, newerActivityText) {
             type: "basic",
             title: player.username,
             message: newerActivityText,
-            iconUrl: player.avatar_url
+            iconUrl: player.avatar_url,
+            appIconMaskUrl: 'images/icon-mask.png'
             // buttons: [
             //   { title: 'Go' },
             //   { title: 'Ignore' }
