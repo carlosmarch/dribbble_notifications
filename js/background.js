@@ -34,7 +34,7 @@ chrome.runtime.onMessage.addListener(function (data, sender, sendResponse) {
 var options = {
     showNotifications: true,
     clearActivity: true,
-    intervalTimeout: 60000
+    intervalTimeout: 1800000
 };
 
 var timer = null;
@@ -243,7 +243,7 @@ function checkNews(data) {
 
     var news = $data.find('.new-activity');
 
-    if (!news.length) {
+    if (news.length) {
         fillNotification(newerActivityplayerId, newerActivityText);
 
     } else {
