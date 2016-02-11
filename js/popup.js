@@ -142,7 +142,7 @@
 
     function printPlayerShotTPL(playerShots) {
         //SHOT INFO
-        console.log(playerShots)
+        //console.log(playerShots)
         if (typeof playerShots !== 'undefined' && playerShots.length > 0) {
             // the array is defined and has at least one element
             var latestShot = '<a href="' + playerShots[0].html_url + '" target="_blank"><img class="shot-image" src="' + playerShots[0].images.normal + '" alt="' + playerShots[0].title + '"></a>';
