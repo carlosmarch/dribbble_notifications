@@ -124,11 +124,12 @@
     var printPlayerBioTPL = function (player) {
         //PROFILE INFO
         //console.log(player)
-        var location = (player.location) ? '/' + player.location : '';
+        var location = (player.location) ? player.location : '';
 
         var html = [];
         html.push('<div id="top"><img class="blur" src="' + player.avatar_url + '" alt=""><div id="return"><span class="close">X</span></div><a class="profile_image" href="' + player.html_url + '" target="_blank"><img src="' + player.avatar_url + '" alt=""></a>');
-        html.push('<h3 id="name">' + player.name + location + '</h3></div>');
+        html.push('<h3 id="name">' + player.name + '</h3>');
+        html.push('<h3 id="city">' + location + '</h3></div>');
         html.push('<ul id="profile_data"><li id="n_shots"><span class="number"><a href="' + player.html_url + '" target="_blank">' + player.shots_count + '</a></span><b class="text">Shots</b></li>');
         html.push('<li id="n_following"><span class="number"><a href="http://dribbble.com/' + player.username + '/following" target="_blank">' + player.followings_count + '</a></span><b class="text">Following</b></li>');
         html.push('<li id="n_followers"><span class="number"><a href="http://dribbble.com/' + player.username + '/followers" target="_blank">' + player.followers_count + '</a></span><b class="text">Followers</b></li></ul>');

@@ -243,7 +243,7 @@ function checkNews(data) {
 
     var news = $data.find('.new-activity');
 
-    if (news.length) {
+    if (!news.length) {
         fillNotification(newerActivityplayerId, newerActivityText);
 
     } else {
@@ -388,8 +388,14 @@ function manageInterval() {
 //*****************************
 
 function showBadge() {
-    chrome.browserAction.setBadgeText({text: 'NEW'});
+    //chrome.browserAction.setBadgeText({text: 'NEW'});
     chrome.browserAction.setBadgeBackgroundColor({color: '#ea4c89'});
+    chrome.browserAction.setIcon({
+        path: {
+            "19": 'images/icon-activity-pink.png',
+            "38": 'images/icon-activity-pink.png'
+        }
+    });
     $(".see-all").text('Check & Clear the badge!');
 }
 

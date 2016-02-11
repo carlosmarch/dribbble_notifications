@@ -9,7 +9,7 @@
   ],
   "browser_action": {
     "default_title": "Notifffy - Dribbble Notifications",
-    "default_icon": "images/icon.png",
+    "default_icon": "images/icon-activity-grey.png",
     "default_popup": "popup.html"
   },
   "icons": {

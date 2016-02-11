@@ -191,7 +191,7 @@ ul.activity-mini li em.time {
   padding-left: 0;
   float: none;
   text-align: center;
-  background: rgb(231, 231, 231);
+  /*background: rgb(231, 231, 231);*/
   height: 38px;
   bottom: 0;
 }
@@ -205,16 +205,16 @@ body#incoming-activity #nav li#t-activity:hover ul.activity-mini li.more a.close
 .activity-mini li.more a.see-all,
 ul.activity-mini li.more a.see-all {
   padding-right: 12px;
-  font-size: 12px;
-  font-weight: bold;
-  background: rgb(230, 230, 230);/*url(../images/icon-bluearrow.png) no-repeat 97% 7px*/
+  font-size: 10px;
+  font-weight: 400;
+  /*background: rgb(230, 230, 230);/*url(../images/icon-bluearrow.png) no-repeat 97% 7px*/
   padding: 4px 21px;
   border-radius: 3px;
 }
 a.see-all:hover{
   opacity: .5;
   -webkit-transition: opacity 0.3s ease-in;
-  background: rgb(230, 230, 230); /* url(../images/icon-bluearrow.png) no-repeat 97% -15px!important*/
+  /*background: rgb(230, 230, 230); /* url(../images/icon-bluearrow.png) no-repeat 97% -15px!important*/
 }
 .activity-mini li.more a:hover,
 body#incoming-activity #nav li#t-activity:hover ul.activity-mini li.more a:hover {
@@ -380,16 +380,16 @@ img.center{padding:30px; margin:10px auto;display:block;}
   display: block;
   margin: 0 auto;
   max-width: 70px;
-  background: #fff;
+  background-color: rgb(231, 231, 231);
+  width: 70px;
+  height: 70px;
 }
 #name{
-  font-size: 16px;
+  font-size: 14px;
   font-weight: bold;
-  padding: 2px 0 10px 0;
+  padding: 2px 0 3px 0;
   text-align: center;
   letter-spacing: -0.033333em;
-  width: 80%;
-  /*color: rgb(184, 184, 184);*/
   color: #fff;
   text-overflow: ellipsis;
   display: block;
@@ -398,6 +398,13 @@ img.center{padding:30px; margin:10px auto;display:block;}
   margin: 0 auto;
   overflow-x: hidden;
   margin-top: 6px;
+}
+
+#city {
+  width: 100%;
+  color: #fff;
+  text-align: center;
+  font-size: 10px;
 }
 
 #url{
