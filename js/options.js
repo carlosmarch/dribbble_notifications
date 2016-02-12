@@ -16,7 +16,7 @@ function init(){
 //On Init Print in DOM the Storage Values
 function restore_options() {
   chrome.storage.sync.get(null, function (items) {
-    console.log('storage items:', items)
+    //console.log('storage items:', items)
     try {
       if (chrome.runtime.lastError) {
         console.warn(chrome.runtime.lastError.message);

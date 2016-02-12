@@ -16,19 +16,17 @@
         }
     );
 
-    // PRINT DATA IN DOM WITH INFO
-    //Got message from background.js with activity list
+    // PRINT DATA IN DOM WITH INFO VIA BACKGROUND.JS MESSAGE
+    // Got message from background.js with activity list
     chrome.runtime.onMessage.addListener(
         function (data, sender, sendResponse) {
 
             //console.log('this is webdata',data);
-            //send response to background.js
-            //sendResponse('opened');
+
             if (data.activity_items) {
                 printList(data.activity_items);
             } else if (data.api_limit) {
                 text = 'Api Rate Limited. <br> Please try again in a few seconds.';
-
                 statusMessage(text);
             } else if (data.not_logged) {
                 // there is no data
@@ -37,6 +35,9 @@
                 statusMessage(text);
             }
 
+            //send response to background.js
+            //then in background.js will manageClearActivity()
+            sendResponse('opened');
 
         }
     );

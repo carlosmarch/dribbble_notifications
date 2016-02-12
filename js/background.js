@@ -23,8 +23,10 @@ chrome.runtime.onMessage.addListener(function (data, sender, sendResponse) {
         //send response to options.js
         //sendResponse('is saved so redefine interval');
         //check data with new values
-        //console.log(data.intervalTimeout)
+        //console.log(data);
         changeTime(data.intervalTimeout);
+        options.clearActivity = data.clearActivity;
+        options.showNotifications = data.showNotifications;
     }
 });
 
@@ -32,9 +34,9 @@ chrome.runtime.onMessage.addListener(function (data, sender, sendResponse) {
 // DEFAULT
 //*****************************
 var options = {
-    showNotifications: true,
     clearActivity: true,
-    intervalTimeout: 1800000
+    intervalTimeout: 1800000,
+    showNotifications: true
 };
 
 var timer = null;
@@ -109,7 +111,7 @@ function limitAJAXCalls() {
 //Init checking data from storage - function setStorageDefaultValues()
 //Then set seconds timeout variable - function manageInterval()
 //The call to dribbble site
-// ACTUALLY NOT IN USE
+// Currently NOT IN USE
 // @TODO REVIEW. IT'S ASYNC
 function init() {
     $.when(
@@ -137,27 +139,36 @@ function setStorageDefaultValues() {
                 //console.log(items);
 
                 //Get showNotifications
-                if (!items.showNotifications) {
-                    //Set Default showNotifications value to true
+                if (typeof items.showNotifications == 'undefined') {
+                    //Set Default showNotifications value to options
                     chrome.storage.sync.set({
                         showNotifications: options.showNotifications
                     });
+                } else {
+                    // Equal options default value to storage
+                    options.showNotifications = items.showNotifications;
                 }
 
                 //Get clearActivity
-                if (!items.clearActivity) {
-                    //Set Default clearActivity value to true
+                if (typeof items.clearActivity == 'undefined') {
+                    //Set Default clearActivity value to options
                     chrome.storage.sync.set({
                         clearActivity: options.clearActivity
                     });
+                } else {
+                    // Equal options default value to storage
+                    options.clearActivity = items.clearActivity;
                 }
 
                 //Get intervalTimeout
-                if (!items.intervalTimeout) {
-                    //Set Default intervalTimeout value to 5000
+                if (typeof items.intervalTimeout == 'undefined') {
+                    //Set Default intervalTimeout value to options
                     chrome.storage.sync.set({
                         intervalTimeout: options.intervalTimeout
                     });
+                } else {
+                    // Equal options default value to storage
+                    changeTime(items.intervalTimeout)
                 }
 
             }
@@ -196,7 +207,6 @@ function check() {
             });
         }
 
-
     }
 
 }
@@ -207,7 +217,7 @@ function check() {
 function initApiCall() {
     var data = req.responseText;
     var itemslist = $(data).find('.activity-mini');
-    //store scrapped data
+    //STORE scrapped data
     scrapStorage = data;
     if (!itemslist.length) {
         //Can't retrieve activity list
@@ -226,7 +236,7 @@ function initApiCall() {
 // We have stored data
 // Init rendering functions with scrapped data
 function scrapStoragePrint(scrapStorage) {
-    console.log('Printing Stored Data')
+    console.log('Stored Data')
     checkNews(scrapStorage);
     sendData(scrapStorage);
 }
@@ -240,11 +250,15 @@ function checkNews(data) {
     var newerActivity = $data.find('.activity-mini li:first');
     var newerActivityText = newerActivity.text().replace(/(\r\n|\n|\r)/gm, "").replace(/  +/g, ' ');
     var newerActivityplayerId = $(newerActivity).find('a[href]')[0].pathname.replace('/', '');
-
+    //var fakeActivityID = $(newerActivity).find('>a').attr('href').split("/")[2].split("-")[0];
+    //notificationActivityID = 1234+likes+activitytext
+    var notificationActivityID = newerActivityplayerId + '+' + $(newerActivity).attr('class') + '+' + $(newerActivity).find('>a').text().split(' ').join('-');
+    //console.log(notificationActivityID);
     var news = $data.find('.new-activity');
 
     if (news.length) {
-        fillNotification(newerActivityplayerId, newerActivityText);
+        console.log('Hey cowboy. We\'ve got news!')
+        fillNotification(newerActivityplayerId, newerActivityText, notificationActivityID);
 
     } else {
         clearBadge();
@@ -261,7 +275,7 @@ function sendData(data) {
         function (response) {
             //get response from popup.js
             if (response == 'opened') {
-                //console.log(response, 'go and check if clear badge & activity');
+                console.log(response, 'Manage Clear Activity');
                 manageClearActivity();
             }
         }
@@ -275,7 +289,7 @@ function checkActivity() {
     var reqCheck = new XMLHttpRequest();
     reqCheck.open('GET', 'https://dribbble.com/activity');
     reqCheck.onload = function () {
-        //console.log('Clear Dribbble activity.')
+        console.log('Clear Dribbble Activity')
         clearBadge();
     };
     reqCheck.send();
@@ -289,12 +303,12 @@ function checkActivity() {
 
 $.jribbble.setToken('a856179b187e185d438d1fd24d3d5408b57e52bb3d8607b8fdeeda9239c14278');
 
-function fillNotification(newerActivityplayerId, newerActivityText) {
+function fillNotification(newerActivityplayerId, newerActivityText, notificationActivityID) {
     //We need the player photo so call api with played id
     $.jribbble.users(newerActivityplayerId).then(success, error);
 
     function success(player) {
-        manageNews(player, newerActivityText);
+        manageNews(player, newerActivityText, notificationActivityID);
     };
 
     function error(jqxhr) {
@@ -309,7 +323,7 @@ function fillNotification(newerActivityplayerId, newerActivityText) {
 // STORAGE
 //*****************************
 
-function manageNews(player, newerActivityText) {
+function manageNews(player, newerActivityText, notificationActivityID) {
 
     showBadge();
 
@@ -331,7 +345,7 @@ function manageNews(player, newerActivityText) {
         //console.log('showNotifications:', val)
         if (val) {
             //show Notification
-            showNotification(player, newerActivityText);
+            showNotification(player, newerActivityText, notificationActivityID);
         }
     }
 };
@@ -351,7 +365,7 @@ function manageClearActivity() {
     }
 
     function userWantsClearActivity(val) {
-        console.log('clearActivity:', val)
+        //console.log('clearActivity:', val)
         //val from storage
         if (val) {
             //check activity page & clear badge
@@ -389,7 +403,7 @@ function manageInterval() {
 
 function showBadge() {
     //chrome.browserAction.setBadgeText({text: 'NEW'});
-    chrome.browserAction.setBadgeBackgroundColor({color: '#ea4c89'});
+    //chrome.browserAction.setBadgeBackgroundColor({color: '#ea4c89'});
     chrome.browserAction.setIcon({
         path: {
             "19": 'images/icon-activity-pink.png',
@@ -397,21 +411,29 @@ function showBadge() {
         }
     });
     $(".see-all").text('Check & Clear the badge!');
+    //animateIcon();
 }
 
 function clearBadge() {
     chrome.browserAction.setBadgeText({text: ''});
     $(".see-all").text('See all incoming activity');
+    chrome.browserAction.setIcon({
+        path: {
+            "19": 'images/icon-activity-grey.png',
+            "38": 'images/icon-activity-grey.png'
+        }
+    });
 }
 
 
 var notiArr = [];
-var showNotification = function (player, newerActivityText) {
+var showNotification = function (player, newerActivityText, notificationActivityID) {
 
-    var notiExists = notiArr.indexOf(player.username);
-    //console.log(notiArr)
+    var notiExists = notiArr.indexOf(notificationActivityID);
+
     if (notiExists == -1) {
-        var notifId = player.username;
+        //create id for this notification
+        var notifId = notificationActivityID;
         notiArr.push(notifId);
 
         chrome.notifications.create(notifId, {
@@ -447,7 +469,9 @@ chrome.notifications.onClicked.addListener(function (notifId) {
 });
 
 chrome.notifications.onClosed.addListener(function (notifId) {
+    //console.log(notifId);
     destroyDesktopNotification(notifId);
+    manageClearActivity();
 });
 
 chrome.notifications.onButtonClicked.addListener(function (notifId, btnIdx) {
@@ -467,6 +491,26 @@ function destroyDesktopNotification(notifId) {
 }
 
 
+//Animate Browser Icon
+var searching_images = ['images/icon-anim/icon-anim1.png',
+    'images/icon-anim/icon-anim2.png',
+    'images/icon-anim/icon-anim3.png',
+    'images/icon-anim/icon-anim4.png',
+    'images/icon-anim/icon-anim5.png',
+    'images/icon-anim/icon-anim6.png'];
+var image_index = 0;
+var animcount = 0;
+function animateIcon() {
+    animcount++
+    if (animcount <= searching_images.length) {
+        chrome.browserAction.setIcon({
+            path: {
+                "19": searching_images[image_index],
+                "38": searching_images[image_index]
+            }
+        });
+        image_index = (image_index + 1) % searching_images.length;
+        window.setTimeout(animateIcon, 80);
+    }
 
-
-
+}
