@@ -275,7 +275,7 @@ function sendData(data) {
         function (response) {
             //get response from popup.js
             if (response == 'opened') {
-                console.log(response, 'Manage Clear Activity');
+                console.log('Manage Clear Activity');
                 manageClearActivity();
             }
         }
@@ -410,13 +410,13 @@ function showBadge() {
             "38": 'images/icon-activity-pink.png'
         }
     });
-    $(".see-all").text('Check & Clear the badge!');
-    //animateIcon();
+    //$(".see-all").text('Check & Clear the badge!');
+    animateIcon();
 }
 
 function clearBadge() {
     chrome.browserAction.setBadgeText({text: ''});
-    $(".see-all").text('See all incoming activity');
+    //$(".see-all").text('See all incoming activity');
     chrome.browserAction.setIcon({
         path: {
             "19": 'images/icon-activity-grey.png',
