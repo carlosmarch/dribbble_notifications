@@ -58,7 +58,7 @@ start(check);
 
 //*****************************
 // TIMER FUNCTIONS
-// thanks to @roger
+// thanks to @neoroger
 //*****************************
 
 
@@ -80,11 +80,11 @@ function stop() {
 function changeTime(time) {
     options.intervalTimeout = time;
     restart();
-    console.log('changeTime to', options.intervalTimeout)
+    //console.log('changeTime to', options.intervalTimeout)
 }
 
-//Returns true or false
-//If user has reached stablished rate limit
+
+//Function to stablish rate limit
 function limitAJAXCalls() {
     if (!firstTime) {
         // Let pass if is the first time
@@ -93,7 +93,7 @@ function limitAJAXCalls() {
         return true;
     }
     var now = Date.now(), diff = now - lastAJAX;
-    //console.log(now, lastAJAX, diff);
+
     if (diff >= limitAjaxCall) {
         lastAJAX = now;
         return true;
@@ -106,22 +106,6 @@ function limitAJAXCalls() {
 //*****************************
 // INIT APP FUNCTIONS
 //*****************************
-
-
-//Init checking data from storage - function setStorageDefaultValues()
-//Then set seconds timeout variable - function manageInterval()
-//The call to dribbble site
-// Currently NOT IN USE
-// @TODO REVIEW. IT'S ASYNC
-function init() {
-    $.when(
-        setStorageDefaultValues(),
-        manageInterval()
-    ).done(function () {
-            //Then Check page
-            start(check);
-        });
-}
 
 
 // Check Storage Values for: showNotifications, clearActivity & intervalTimeout
@@ -137,38 +121,20 @@ function setStorageDefaultValues() {
             } else {
 
                 //console.log(items);
-
-                //Get showNotifications
-                if (typeof items.showNotifications == 'undefined') {
+                if (isEmpty(items)) {
+                    //console.log('storage empty');
                     //Set Default showNotifications value to options
                     chrome.storage.sync.set({
-                        showNotifications: options.showNotifications
-                    });
-                } else {
-                    // Equal options default value to storage
-                    options.showNotifications = items.showNotifications;
-                }
-
-                //Get clearActivity
-                if (typeof items.clearActivity == 'undefined') {
-                    //Set Default clearActivity value to options
-                    chrome.storage.sync.set({
-                        clearActivity: options.clearActivity
-                    });
-                } else {
-                    // Equal options default value to storage
-                    options.clearActivity = items.clearActivity;
-                }
-
-                //Get intervalTimeout
-                if (typeof items.intervalTimeout == 'undefined') {
-                    //Set Default intervalTimeout value to options
-                    chrome.storage.sync.set({
+                        showNotifications: options.showNotifications,
+                        clearActivity: options.clearActivity,
                         intervalTimeout: options.intervalTimeout
                     });
                 } else {
+                    //console.log('storage has data');
                     // Equal options default value to storage
-                    changeTime(items.intervalTimeout)
+                    options.showNotifications = items.showNotifications;
+                    options.clearActivity = items.clearActivity;
+                    changeTime(items.intervalTimeout);
                 }
 
             }
@@ -188,7 +154,7 @@ function check() {
     // one each 10 seconds max
 
     if (limitAJAXCalls()) {
-        console.log('Checking for Dribbble activity...');
+        console.log('Checking Dribbble Activity...');
 
         req = new XMLHttpRequest();
         req.open('GET', 'http://dribbble.com');
@@ -217,11 +183,18 @@ function check() {
 function initApiCall() {
     var data = req.responseText;
     var itemslist = $(data).find('.activity-mini');
+
     //STORE scrapped data
     scrapStorage = data;
+
+    //Store news first time
+    if (storedNewsID.length <= 0) {
+        storeItemsID(data)
+    }
+
+    //Can't retrieve activity list. User is not logged in
     if (!itemslist.length) {
-        //Can't retrieve activity list
-        //User is not logged in
+
         //Send message to popup.js
         chrome.runtime.sendMessage({
             not_logged: true
@@ -233,6 +206,7 @@ function initApiCall() {
     }
 };
 
+
 // We have stored data
 // Init rendering functions with scrapped data
 function scrapStoragePrint(scrapStorage) {
@@ -241,53 +215,69 @@ function scrapStoragePrint(scrapStorage) {
     sendData(scrapStorage);
 }
 
+
 // Check if there are news and proceed to check:
 // if user wants desktop notifications
 // and show the notification badge
 function checkNews(data) {
-    //reading the html
     var $data = $(data);
-    var newerActivity = $data.find('.activity-mini li:first');
-    var newerActivityText = newerActivity.text().replace(/(\r\n|\n|\r)/gm, "").replace(/  +/g, ' ');
-    var newerActivityplayerId = $(newerActivity).find('a[href]')[0].pathname.replace('/', '');
-    //var fakeActivityID = $(newerActivity).find('>a').attr('href').split("/")[2].split("-")[0];
-    //notificationActivityID = 1234+likes+activitytext
-    var notificationActivityID = newerActivityplayerId + '+' + $(newerActivity).attr('class') + '+' + $(newerActivity).find('>a').text().split(' ').join('-');
-    //console.log(notificationActivityID);
     var news = $data.find('.new-activity');
+    $data.find('.activity-mini li:not(:last-child)').each(function () {
+        var itemActivityplayerId = $(this).find('a[href]')[0].pathname.replace('/', '');
+        var itemActivityText = $(this).text().replace(/(\r\n|\n|\r)/gm, "").replace(/  +/g, ' ');
+        var itemActivityID = itemActivityplayerId + '+' + $(this).attr('class') + '+' + $(this).find('>a').text().split(' ').join('-');
+        if (news.length) {
+            showBadge();
+            if (storedNewsID.indexOf(itemActivityID) == -1) {
+                storedNewsID.push(itemActivityID);
+                console.log('Hey cowboy. We\'ve got news!')
+                fillNotification(itemActivityplayerId, itemActivityText, itemActivityID);
+            }
+        } else {
+            clearBadge();
+        }
+    });
 
-    if (news.length) {
-        console.log('Hey cowboy. We\'ve got news!')
-        fillNotification(newerActivityplayerId, newerActivityText, notificationActivityID);
-
-    } else {
-        clearBadge();
-    }
 }
 
 
+//Store ItemsID then this will help
+//to show notifications
+storedNewsID = [];
+function storeItemsID(data) {
+    var $data = $(data);
+    $data.find('.activity-mini li:not(:last-child)').each(function () {
+        var itemActivityplayerId = $(this).find('a[href]')[0].pathname.replace('/', '');
+        var itemActivityID = itemActivityplayerId + '+' + $(this).attr('class') + '+' + $(this).find('>a').text().split(' ').join('-');
+        storedNewsID.push(itemActivityID);
+    });
+}
+
+
+//send full web to popup.js
+//On popup.js the data is rendered
 function sendData(data) {
-    //send full web to popup.js
-    //On popup.js the data is rendered
     chrome.runtime.sendMessage({
             activity_items: data
         },
         function (response) {
             //get response from popup.js
             if (response == 'opened') {
-                console.log('Manage Clear Activity');
+                //console.log('Manage Clear Activity');
                 manageClearActivity();
             }
         }
     );
 }
 
+
+//Opens new tab with dribbble activity page
+//Function to check Activity Notification Icon
 function checkActivity() {
-    //https://dribbble.com/activity
-    //Opens new tab with dribbble activity page
-    //this check activity notification
+    var urlToOpen = 'https://dribbble.com/activity';
+
     var reqCheck = new XMLHttpRequest();
-    reqCheck.open('GET', 'https://dribbble.com/activity');
+    reqCheck.open('GET', urlToOpen);
     reqCheck.onload = function () {
         console.log('Clear Dribbble Activity')
         clearBadge();
@@ -324,8 +314,6 @@ function fillNotification(newerActivityplayerId, newerActivityText, notification
 //*****************************
 
 function manageNews(player, newerActivityText, notificationActivityID) {
-
-    showBadge();
 
     //async brainfuck for reading storage value
     //get data from storage and show notification if user wants
@@ -426,30 +414,25 @@ function clearBadge() {
 }
 
 
-var notiArr = [];
 var showNotification = function (player, newerActivityText, notificationActivityID) {
 
-    var notiExists = notiArr.indexOf(notificationActivityID);
+    //create id for this notification
+    var notifId = notificationActivityID;
 
-    if (notiExists == -1) {
-        //create id for this notification
-        var notifId = notificationActivityID;
-        notiArr.push(notifId);
+    chrome.notifications.create(notifId, {
+        type: "basic",
+        title: player.username,
+        message: newerActivityText,
+        iconUrl: player.avatar_url,
+        appIconMaskUrl: 'images/icon-mask.png'
+        // buttons: [
+        //   { title: 'Go' },
+        //   { title: 'Ignore' }
+        // ]
+    }, function () {
+        ///created
+    });
 
-        chrome.notifications.create(notifId, {
-            type: "basic",
-            title: player.username,
-            message: newerActivityText,
-            iconUrl: player.avatar_url,
-            appIconMaskUrl: 'images/icon-mask.png'
-            // buttons: [
-            //   { title: 'Go' },
-            //   { title: 'Ignore' }
-            // ]
-        }, function () {
-            ///created
-        });
-    }
 
 }
 
@@ -513,4 +496,28 @@ function animateIcon() {
         window.setTimeout(animateIcon, 80);
     }
 
+}
+
+
+//*****************************
+// UTILS
+//*****************************
+function isEmpty(obj) {
+
+    // null and undefined are "empty"
+    if (obj == null) return true;
+
+    // Assume if it has a length property with a non-zero value
+    // that that property is correct.
+    if (obj.length > 0)    return false;
+    if (obj.length === 0)  return true;
+
+    // Otherwise, does it have any properties of its own?
+    // Note that this doesn't handle
+    // toString and valueOf enumeration bugs in IE < 9
+    for (var key in obj) {
+        if (hasOwnProperty.call(obj, key)) return false;
+    }
+
+    return true;
 }

@@ -121,10 +121,14 @@
     //*****************************
     // TEMPLATES & PRINT DATA
     //*****************************
-
+    //@TODO store player data to limit api calls
+    //@TODO Print when two calls finished and not before
+    //storedPlayers = [];
     var printPlayerBioTPL = function (player) {
         //PROFILE INFO
         //console.log(player)
+        //storedPlayers.push( { player_id : player.id , player_info :player });
+
         var location = (player.location) ? player.location : '';
 
         var html = [];
@@ -142,7 +146,7 @@
 
 
     function printPlayerShotTPL(playerShots) {
-        //SHOT INFO
+        //SHOT IO
         //console.log(playerShots)
         if (typeof playerShots !== 'undefined' && playerShots.length > 0) {
             // the array is defined and has at least one element
