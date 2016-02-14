@@ -475,6 +475,8 @@ function destroyDesktopNotification(notifId) {
 
 
 //Animate Browser Icon
+//@TODO Check animation interruption
+//Force to be at end image when finished
 var searching_images = ['images/icon-anim/icon-anim1.png',
     'images/icon-anim/icon-anim2.png',
     'images/icon-anim/icon-anim3.png',
