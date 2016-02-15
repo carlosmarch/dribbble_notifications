@@ -42,20 +42,6 @@
         }
     );
 
-    //*****************************
-    // JRIBBBLE API CALL
-    //*****************************
-
-    $.jribbble.setToken('a856179b187e185d438d1fd24d3d5408b57e52bb3d8607b8fdeeda9239c14278');
-
-
-    function getPlayerBio(playerId, callback){
-        $.jribbble.users(playerId).then(callback);
-    }
-
-    function getPlayerShots(playerId, callback) {
-        $.jribbble.users(playerId).shots().then(callback);
-    }
 
 
     //*****************************
@@ -92,7 +78,7 @@
         //get info & send to details section
         $('.activity-mini li:not(:last-child)').click(function() {
             var playerId = $(this).find('a[rel^=contact]').attr('href').split("/")[3];
-
+            //storePlayerInfoAndShots(playerId)
             getPlayerData(playerId);
             showDetail();
         });
@@ -107,27 +93,81 @@
 
     }
 
+
+    //*****************************
+    // INIT APP
+    //*****************************
+
+    storedPlayers = [];
+
     function getPlayerData(playerId) {
-        if (typeof playerId === 'string') {
-            getPlayerBio(playerId, printPlayerBioTPL);
-            getPlayerShots(playerId, printPlayerShotTPL);
+
+        if (playerNameExists(playerId)) {
+            console.log('is stored player')
+            printPlayerBioTPL(storedPlayers[returnStoredKeybyName(playerId)].player_info);
+            printPlayerShotTPL(storedPlayers[returnStoredKeybyName(playerId)].player_shots)
+
         } else {
-            //error - is player undefined
-            printErrorTPL();
+            console.log('is not stored player')
+
+            //getPlayerBio(playerId, printPlayerBioTPL);
+            //getPlayerShots(playerId, printPlayerShotTPL);
+            callApiAndStorePlayer(playerId)
         }
+
+
     };
 
+    //*****************************
+    // JRIBBBLE API CALL
+    //*****************************
+
+    $.jribbble.setToken('a856179b187e185d438d1fd24d3d5408b57e52bb3d8607b8fdeeda9239c14278');
+
+
+    function getPlayerBio(playerId, callback) {
+        $.jribbble.users(playerId).then(callback);
+    }
+
+    function getPlayerShots(playerId, callback) {
+        $.jribbble.users(playerId).shots().then(callback);
+    }
+
+
+    function callApiAndStorePlayer(playerId) {
+        $.when(
+            $.jribbble.users(playerId).then(function (player) {
+                //console.log('1')
+                if (!playerIDExists(player.id)) {
+                    console.log('Player info is not stored. Insert player data')
+                    storedPlayers.push({player_id: player.id, player_name: player.username, player_info: player});
+                    return player
+                }
+            }),
+            $.jribbble.users(playerId).shots().then(function (playerShots) {
+                //console.log('2')
+                if (playerNameExists(playerId)) {
+                    console.log('Player is stored. Insert shots')
+                    storedPlayers[returnStoredKeybyName(playerId)].player_shots = playerShots;
+                    return playerShots
+                }
+            })
+        ).done(function (player, playerShots) {
+                //console.log('done', player, playerShots)
+                getPlayerData(playerId)
+
+            }).fail(function () {
+                console.error('Error ocurred');
+
+            });
+    }
 
     //*****************************
     // TEMPLATES & PRINT DATA
     //*****************************
-    //@TODO store player data to limit api calls
-    //@TODO Print when two calls finished and not before
-    //storedPlayers = [];
     var printPlayerBioTPL = function (player) {
         //PROFILE INFO
         //console.log(player)
-        //storedPlayers.push( { player_id : player.id , player_info :player });
 
         var location = (player.location) ? player.location : '';
 
@@ -180,6 +220,39 @@
         $('#detail').html('');
         $('body').height('');
     }
+
+    //*****************************
+    // STORING UTILS
+    //*****************************
+
+    function playerIDExists(playerId) {
+        return storedPlayers.some(function (el) {
+            return el.player_id === playerId;
+        });
+    }
+
+    function playerNameExists(playerId) {
+        return storedPlayers.some(function (el) {
+            return el.player_name === playerId;
+        });
+    }
+
+    function returnStoredKeybyName(playerId) {
+        for (var i = 0, len = storedPlayers.length; i < len; i++) {
+            if (storedPlayers[i].player_name === playerId)
+                return i;//player is stored
+        }
+        return false;//player is not stored
+    }
+
+    function returnStoredKeybyID(playerId) {
+        for (var i = 0, len = storedPlayers.length; i < len; i++) {
+            if (storedPlayers[i].player_id === playerId)
+                return i;//player is stored
+        }
+        return false;//player is not stored
+    }
+
 
 
 })(jQuery);
