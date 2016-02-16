@@ -160,6 +160,7 @@ function check() {
         req.open('GET', 'http://dribbble.com');
         req.onload = initApiCall;
         req.send();
+
     } else {
         // API RATE LIMITED
         if (scrapStorage) {
@@ -187,7 +188,7 @@ function initApiCall() {
     //STORE scrapped data
     scrapStorage = data;
 
-    //Store news first time
+    //STORE news first time
     if (storedNewsID.length <= 0) {
         storeItemsID(data)
     }
@@ -222,21 +223,24 @@ function scrapStoragePrint(scrapStorage) {
 function checkNews(data) {
     var $data = $(data);
     var news = $data.find('.new-activity');
+
     $data.find('.activity-mini li:not(:last-child)').each(function () {
         var itemActivityplayerId = $(this).find('a[href]')[0].pathname.replace('/', '');
         var itemActivityText = $(this).text().replace(/(\r\n|\n|\r)/gm, "").replace(/  +/g, ' ');
         var itemActivityID = itemActivityplayerId + '+' + $(this).attr('class') + '+' + $(this).find('>a').text().split(' ').join('-');
         if (news.length) {
-            showBadge();
             if (storedNewsID.indexOf(itemActivityID) == -1) {
                 storedNewsID.push(itemActivityID);
                 console.log('Hey cowboy. We\'ve got news!')
                 fillNotification(itemActivityplayerId, itemActivityText, itemActivityID);
             }
-        } else {
-            clearBadge();
         }
     });
+    if (news.length) {
+        showBadge();
+    } else {
+        clearBadge();
+    }
 
 }
 
@@ -262,7 +266,7 @@ function sendData(data) {
         },
         function (response) {
             //get response from popup.js
-            if (response == 'opened') {
+            if (response == 'data_received') {
                 //console.log('Manage Clear Activity');
                 manageClearActivity();
             }
@@ -452,9 +456,10 @@ chrome.notifications.onClicked.addListener(function (notifId) {
 });
 
 chrome.notifications.onClosed.addListener(function (notifId) {
-    //console.log(notifId);
+    // Fired on click to close and on timeout desapear
+    // console.log('closed', notifId);
     destroyDesktopNotification(notifId);
-    manageClearActivity();
+
 });
 
 chrome.notifications.onButtonClicked.addListener(function (notifId, btnIdx) {

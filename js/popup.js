@@ -37,7 +37,7 @@
 
             //send response to background.js
             //then in background.js will manageClearActivity()
-            sendResponse('opened');
+            sendResponse('data_received');
 
         }
     );
