@@ -2,7 +2,9 @@
 
 # Notifffy - Dribbble Notifications
 Desktop notifications for your Dribbble activity.
-*Version 2.0 - 10 feb, 2016
+
+*Version 2.3 - 16 feb, 2016
+
 <img src="images/banner.png" width="100%"></img>
 
 
