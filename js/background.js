@@ -284,7 +284,7 @@ function checkActivity() {
     reqCheck.open('GET', urlToOpen);
     reqCheck.onload = function () {
         console.log('Clear Dribbble Activity')
-        clearBadge();
+        //clearBadge();
     };
     reqCheck.send();
 
