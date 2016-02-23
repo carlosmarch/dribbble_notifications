@@ -25,13 +25,10 @@
 
             if (data.activity_items) {
                 printList(data.activity_items);
-            } else if (data.api_limit) {
-                text = 'Api Rate Limited. <br> Please try again in a few seconds.';
-                statusMessage(text);
-            } else if (data.not_logged) {
+            } else if (data.error) {
                 // there is no data
                 // we believe that user is not logged in
-                text = 'Login first!'
+                text = data.status + '<br>' + data.title;
                 statusMessage(text);
             }
 

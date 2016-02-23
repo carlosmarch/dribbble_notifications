@@ -150,9 +150,8 @@ function setStorageDefaultValues() {
 // Call to dribbble site
 function check() {
 
-    // API RATE LIMITING
+    // AUTO RATE LIMITING
     // one each 10 seconds max
-
     if (limitAJAXCalls()) {
         console.log('Checking Dribbble Activity...');
 
@@ -162,16 +161,14 @@ function check() {
         req.send();
 
     } else {
-        // API RATE LIMITED
+        // AUTO RATE LIMITED
         if (scrapStorage) {
             //print stored data
             scrapStoragePrint(scrapStorage);
         } else {
-            // We don't have data
-            // Send message to popup.js
-            chrome.runtime.sendMessage({
-                api_limit: true
-            });
+            //Something happened. We don't have data
+            //Send message to popup.js
+            sendError(req);
         }
 
     }
@@ -185,28 +182,33 @@ function initApiCall() {
     var data = req.responseText;
     var itemslist = $(data).find('.activity-mini');
 
-    //STORE scrapped data
-    scrapStorage = data;
-
     //STORE news first time
     if (storedNewsID.length <= 0) {
         storeItemsID(data)
     }
 
-    //Can't retrieve activity list. User is not logged in
-    if (!itemslist.length) {
-
-        //Send message to popup.js
-        chrome.runtime.sendMessage({
-            not_logged: true
-        });
-
-    } else {
+    //We can get data
+    if (itemslist.length) {
+        //STORE scrapped data
+        scrapStorage = data;
         checkNews(data);
         sendData(data);
+
+    } else {
+        sendError(req);
     }
 };
 
+//Send Error to popup.js
+function sendError(req) {
+    //Something happened
+    //Send message to popup.js
+    chrome.runtime.sendMessage({
+        error: true,
+        status: req.status + ' ' + req.statusText,
+        title: $(req.responseText).filter('title').text()
+    });
+}
 
 // We have stored data
 // Init rendering functions with scrapped data
