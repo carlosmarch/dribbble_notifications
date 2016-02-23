@@ -168,7 +168,7 @@ function check() {
         } else {
             //Something happened. We don't have data
             //Send message to popup.js
-            sendError(req);
+            sendError();
         }
 
     }
@@ -203,11 +203,20 @@ function initApiCall() {
 function sendError(req) {
     //Something happened
     //Send message to popup.js
-    chrome.runtime.sendMessage({
-        error: true,
-        status: req.status + ' ' + req.statusText,
-        title: $(req.responseText).filter('title').text()
-    });
+    if (req) {
+        chrome.runtime.sendMessage({
+            error: true,
+            status: req.status + ' ' + req.statusText,
+            title: $(req.responseText).filter('title').text()
+        });
+    } else {
+        chrome.runtime.sendMessage({
+            error: true,
+            status: 'Ups! Something went wrong.',
+            title: 'Please, try again later'
+        });
+    }
+
 }
 
 // We have stored data
@@ -458,7 +467,7 @@ chrome.notifications.onClicked.addListener(function (notifId) {
 });
 
 chrome.notifications.onClosed.addListener(function (notifId) {
-    // Fired on click to close and on timeout desapear
+    // Fired on click to close and on timeout desapear!!
     // console.log('closed', notifId);
     destroyDesktopNotification(notifId);
 
