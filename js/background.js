@@ -1,8 +1,8 @@
 /*
  * Copyright (c) 2015. Carlos March
- * This scripts init the APP
+ * This script init the APP
  * We first set default values on storage
- * Then we call dribbble to manage user notifications
+ * Then we call Dribbble to manage user notifications
  */
 
 //*****************************
