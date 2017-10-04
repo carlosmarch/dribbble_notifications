@@ -439,7 +439,7 @@ var showNotification = function (player, newerActivityText, notificationActivity
         title: player.username,
         message: newerActivityText,
         iconUrl: player.avatar_url,
-        appIconMaskUrl: 'images/icon-mask.png'
+        //appIconMaskUrl: 'images/icon-mask.png'
         // buttons: [
         //   { title: 'Go' },
         //   { title: 'Ignore' }
